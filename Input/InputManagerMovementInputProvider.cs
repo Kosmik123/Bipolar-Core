@@ -22,9 +22,10 @@ namespace Bipolar.Input
         [SerializeField]
         private bool rawInput;
 
-        public float GetHorizontal() => GetAxis(horizontalAxis);
-
-        public float GetVertical() => GetAxis(verticalAxis);
+        public Vector2 GetMotion()
+        {
+            return new Vector2(GetAxis(horizontalAxis), GetAxis(verticalAxis));
+        }
 
         private float GetAxis(string axisName) => InputManagerAxisInputProvider.GetAxis(axisName, rawInput);
     }

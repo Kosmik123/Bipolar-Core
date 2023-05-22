@@ -4,7 +4,6 @@ namespace Bipolar.Input
 {
     public interface IMoveInputProvider
     {
-        float GetHorizontal();
-        float GetVertical();
+        Vector2 GetMotion();
     }
 }

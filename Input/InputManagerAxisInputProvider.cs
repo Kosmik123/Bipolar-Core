@@ -2,9 +2,8 @@
 #if NAUGHTY_ATTRIBUTES
 using NaughtyAttributes;
 #endif
-using Bipolar.Core.Input;
 
-namespace Bipolar.Core.Input
+namespace Bipolar.Input
 {
     public class InputManagerAxisInputProvider : MonoBehaviour, IAxisInputProvider
     {

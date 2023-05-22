@@ -1,4 +1,4 @@
-﻿namespace Bipolar.Core.Input
+﻿namespace Bipolar.Input
 {
     public interface IAxisInputProvider
     {

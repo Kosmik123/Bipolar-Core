@@ -3,7 +3,7 @@
 using NaughtyAttributes;
 #endif
 
-namespace Bipolar.Core.Input
+namespace Bipolar.Input
 {
     public class InputManagerMovementInputProvider : MonoBehaviour, IMoveInputProvider
     {

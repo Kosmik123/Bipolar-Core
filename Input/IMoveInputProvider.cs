@@ -1,5 +1,6 @@
-﻿
-namespace Bipolar.Core.Input
+﻿using UnityEngine;
+
+namespace Bipolar.Input
 {
     public interface IMoveInputProvider
     {

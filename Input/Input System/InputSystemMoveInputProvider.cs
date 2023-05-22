@@ -13,7 +13,6 @@ namespace Bipolar.Input.InputSystem
         {
             return moveAction.action.ReadValue<Vector2>();
         }
-
     }
 }
 #endif

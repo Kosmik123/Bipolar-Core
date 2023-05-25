@@ -1,36 +1,57 @@
 using UnityEngine;
+using System.Collections;
 #if NAUGHTY_ATTRIBUTES
 using NaughtyAttributes;
 #endif
 
-public class Timer : MonoBehaviour
+namespace Bipolar.Core
 {
-    [SerializeField]
-    private float speed = 1;
-    [SerializeField]
-    private float duration;
-
-#if NAUGHTY_ATTRIBUTES
-    [ShowNonSerializedField]
-#else
-    [SerializeField]
-#endif
-    private float time;
-    public float CurrentTime
+    [System.Serializable]
+    public abstract class Timer
     {
-        get => time;
-        set
+        public event System.Action OnEnded;
+
+        [SerializeField]
+        private float speed = 1;
+        [SerializeField]
+        private float duration;
+
+        private MonoBehaviour owner;
+        private Coroutine coroutine;
+
+        [SerializeField]
+        protected float time;
+        public float CurrentTime
         {
-            time = value;
+            get => time;
+            set
+            {
+                time = value;
+            }
+        }
+
+        protected Timer(MonoBehaviour owner)
+        {
+            this.owner = owner;
+            Reset();
+        }
+
+        private IEnumerator UpdateCo()
+        {
+            while (true)
+            {
+                yield return null;
+                time += Time.deltaTime;
+
+
+
+
+            }
+        }
+
+        public void Reset()
+        {
+            time = 0;
         }
     }
-
-    private void Update()
-    {
-        
-    }
-
-
-
-
 }

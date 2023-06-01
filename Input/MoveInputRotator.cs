@@ -20,7 +20,10 @@ namespace Bipolar.Input
 
         public Vector2 GetMotion()
         {
-            return forwardProvider.rotation * MoveInputProvider.GetMotion();
+            var direction = MoveInputProvider.GetMotion();
+
+
+            return forwardProvider.forward * direction.y + forwardProvider.right * direction.x;
         }
 
         private void OnValidate()

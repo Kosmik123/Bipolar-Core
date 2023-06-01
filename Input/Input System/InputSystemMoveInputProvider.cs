@@ -11,7 +11,7 @@ namespace Bipolar.Input.InputSystem
 
         Vector2 IMoveInputProvider.GetMotion()
         {
-            return moveAction.action.ReadValue<Vector2>();
+            return moveAction.action.ReadValue<Vector2>(); // remember to enable it with InputActionEnabler
         }
     }
 }

@@ -1,8 +1,7 @@
 using UnityEngine;
+#if ENABLE_LOCALIZATION
 using UnityEngine.Localization;
 using UnityEngine.Localization.Components;
-
-
 
 namespace Bipolar.Localization
 {
@@ -22,3 +21,4 @@ namespace Bipolar.Localization
 
     }
 }
+#endif

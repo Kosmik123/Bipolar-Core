@@ -8,10 +8,26 @@ namespace Bipolar.Input.InputSystem
     {
         [SerializeField]
         private InputActionReference moveAction;
+        private InputActionReference moveActionInstance;
+
+        private void Awake()
+        {
+            moveActionInstance = Instantiate(moveAction);
+        }
+
+        private void OnEnable()
+        {
+            moveActionInstance.action.Enable();
+        }
 
         Vector2 IMoveInputProvider.GetMotion()
         {
-            return moveAction.action.ReadValue<Vector2>();
+            return moveActionInstance.action.ReadValue<Vector2>();
+        }
+
+        private void OnDisable()
+        {
+            moveActionInstance.action.Disable();
         }
     }
 }

@@ -1,3 +1,4 @@
+#if UNITY_LOCALIZATION
 using UnityEngine;
 using Bipolar.UI;
 using UnityEngine.Localization.Settings;
@@ -53,3 +54,4 @@ namespace Bipolar.Localization
         }
     }
 }
+#endif

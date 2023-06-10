@@ -1,6 +1,6 @@
 ﻿using Bipolar.UI;
 using UnityEngine;
-#if ENABLE_LOCALIZATION
+#if UNITY_LOCALIZATION
 using UnityEngine.Localization;
 using UnityEngine.Localization.Components;
 

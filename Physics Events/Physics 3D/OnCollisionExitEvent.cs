@@ -2,7 +2,7 @@
 
 namespace Bipolar.PhysicsEvents
 {
-    public class OnCollisionExitEvent : PhysicsEvent<Collision>
+    public sealed class OnCollisionExitEvent : PhysicsEvent<Collision>
     {
         private void OnCollisionExit(Collision collision) => Invoke(collision);
     }

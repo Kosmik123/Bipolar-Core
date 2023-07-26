@@ -2,7 +2,7 @@
 
 namespace Bipolar.PhysicsEvents
 {
-    public class OnTriggerEnterEvent : PhysicsEvent<Collider>
+    public sealed class OnTriggerEnterEvent : PhysicsEvent<Collider>
     {
         private void OnTriggerEnter(Collider collision) => Invoke(collision);
     }

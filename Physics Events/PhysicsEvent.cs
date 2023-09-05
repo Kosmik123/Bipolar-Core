@@ -5,7 +5,7 @@ namespace Bipolar.PhysicsEvents
 {
     public abstract class PhysicsEventBase<T> : MonoBehaviour where T : class
     {
-        private event System.Action<T> OnEvent;
+        public event System.Action<T> OnEvent;
 
         [SerializeField]
         private UnityEvent onEvent = new UnityEvent();
@@ -32,12 +32,9 @@ namespace Bipolar.PhysicsEvents
         }
     }
 
-    [RequireComponent(typeof(Rigidbody2D))]
     public abstract class Physics2DEvent<T> : PhysicsEventBase<T>  where T : class
     { }
 
-    [RequireComponent(typeof(Rigidbody))]
     public abstract class PhysicsEvent<T> : PhysicsEventBase<T> where T : class
     { }
-
 }

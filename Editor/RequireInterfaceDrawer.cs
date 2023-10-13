@@ -2,6 +2,7 @@
 using UnityEditor;
 using Bipolar.Core;
 
+#if UNITY_EDITOR
 namespace Bipolar.Editor
 {
     [CustomPropertyDrawer(typeof(RequireInterfaceAttribute))]
@@ -28,3 +29,4 @@ namespace Bipolar.Editor
         }
     }
 }
+#endif

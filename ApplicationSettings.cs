@@ -1,5 +1,7 @@
 using UnityEngine;
+#if NAUGHTY_ATTRIBUTES
 using NaughtyAttributes;
+#endif
 
 namespace Bipolar.Core
 {

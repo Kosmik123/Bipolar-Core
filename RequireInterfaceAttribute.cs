@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Bipolar.Core
+namespace Bipolar
 {
     public class RequireInterfaceAttribute : PropertyAttribute
     {

@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 
-[SelectionBase]
-public class SelectionBase : MonoBehaviour
-{ }
+namespace Bipolar
+{
+    [SelectionBase]
+    public class SelectionBase : MonoBehaviour
+    { }
+}

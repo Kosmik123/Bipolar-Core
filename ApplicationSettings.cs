@@ -3,7 +3,7 @@ using UnityEngine;
 using NaughtyAttributes;
 #endif
 
-namespace Bipolar.Core
+namespace Bipolar
 {
     public class ApplicationSettings : MonoBehaviour
     {

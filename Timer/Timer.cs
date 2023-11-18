@@ -1,17 +1,16 @@
 using UnityEngine;
-using System.Collections;
+using UnityEngine.Events;
 #if NAUGHTY_ATTRIBUTES
 using NaughtyAttributes;
 #endif
 
-namespace Bipolar.Core
+namespace Bipolar
 {
-    [System.Serializable]
-    public class Timer
+    public class Timer : MonoBehaviour
     {
-        public event System.Action OnEnded;
+        public event System.Action OnElapsed;
 
-        [SerializeField]
+        [SerializeField, Min(0)]
         private float speed = 1;
         public float Speed
         {
@@ -22,7 +21,7 @@ namespace Bipolar.Core
             }
         }
 
-        [SerializeField]
+        [SerializeField, Min(0)]
         private float duration;
         public float Duration
         {
@@ -34,6 +33,20 @@ namespace Bipolar.Core
         }
 
         [SerializeField]
+        private bool autoReset;
+        public bool AutoReset
+        {
+            get => autoReset;
+            set
+            {
+                autoReset = value;
+            }
+        }
+
+#if NAUGHTY_ATTRIBUTES
+        [ReadOnly]
+#endif
+        [SerializeField]
         protected float time;
         public float CurrentTime
         {
@@ -44,78 +57,21 @@ namespace Bipolar.Core
             }
         }
 
-        public float Progress
-        { 
-            get
+        [SerializeField]
+        private UnityEvent onElapsed;
+
+        private void Update()
+        {
+            time += speed * Time.deltaTime;
+            if (time >= duration)
             {
-                if (isProgressCalculatedThisFrame == false)
-                {
-                    isProgressCalculatedThisFrame = true;
-                    progressCalculated = time / duration;
-                }
-                return progressCalculated;
+                time = 0;
+                if (autoReset == false)
+                    enabled = false;
+
+                OnElapsed?.Invoke();
+                onElapsed.Invoke();
             }
-        }
-        private float progressCalculated;
-        private bool isProgressCalculatedThisFrame;
-
-        private MonoBehaviour owner;
-        private Coroutine coroutine;
-
-        public Timer(MonoBehaviour owner, float duration = 1, float speed = 1)
-        {
-            Init(owner);
-            Duration = duration;
-            Speed = speed;
-        }
-
-        protected void Init(MonoBehaviour owner)
-        {
-            if (owner == null)
-                throw new System.ArgumentNullException();
-            this.owner = owner;
-            Reset();
-        }
-
-        public void Reset()
-        {
-            time = 0;
-            StopCounting();
-        }
-
-        public void Start()
-        {
-            StopCounting();
-            coroutine = owner.StartCoroutine(UpdateCo());
-        }
-
-        private void StopCounting()
-        {
-            if (coroutine != null)
-                owner.StopCoroutine(coroutine);
-        }
-
-        public void Pause()
-        {
-            StopCounting();
-        }
-
-        private IEnumerator UpdateCo()
-        {
-            while (true)
-            {
-                yield return null;
-                time += speed * Time.deltaTime;
-                isProgressCalculatedThisFrame = false;
-                if (HasEnded())
-                    break;
-            }
-            OnEnded?.Invoke();
-        }
-
-        private bool HasEnded()
-        {
-            return speed < 0 ? time <= 0 : time >= duration;
         }
     }
 }

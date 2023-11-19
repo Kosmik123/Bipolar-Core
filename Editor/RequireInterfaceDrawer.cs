@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using Bipolar.Core;
 
 #if UNITY_EDITOR
 namespace Bipolar.Editor

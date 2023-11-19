@@ -3,7 +3,7 @@
 namespace Bipolar
 {
     [RequireComponent(typeof(Renderer))]
-    public class MaterialRandomizer : MonoBehaviour
+    public class MaterialRandomizer : Randomizer<MeshRenderer>
     {
         [System.Serializable]
         public class RandomMaterialData
@@ -15,29 +15,13 @@ namespace Bipolar
             public Material[] Materials { get; private set; }
         }
 
-        private Renderer _renderer;
-        public Renderer Renderer
-        {
-            get
-            {
-                if (_renderer == null)
-                    _renderer = GetComponent<Renderer>();
-                return _renderer;
-            }
-        }
-
         [SerializeField]
         private RandomMaterialData[] materials;
 
-        private void Awake()
-        {
-            Randomize();
-        }
-
         [ContextMenu("Randomize")]
-        private void Randomize()
+        public override void Randomize()
         {
-            var materialsArray = Renderer.materials;
+            var materialsArray = RandomizedComponent.materials;
             foreach (var data in materials)
             {
                 if (data.Index >= materialsArray.Length)
@@ -45,7 +29,7 @@ namespace Bipolar
 
                 materialsArray[data.Index] = data.Materials[Random.Range(0, data.Materials.Length)];
             }
-            Renderer.materials = materialsArray;
+            RandomizedComponent.materials = materialsArray;
         }
     }
 }

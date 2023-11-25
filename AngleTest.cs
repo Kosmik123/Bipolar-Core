@@ -1,4 +1,6 @@
-﻿using NaughtyAttributes;
+﻿#if NAUGHTY_ATTRIBUTES
+using NaughtyAttributes;
+#endif
 using UnityEngine;
 
 namespace Bipolar
@@ -9,7 +11,9 @@ namespace Bipolar
 
         public Angle angle;
 
+#if NAUGHTY_ATTRIBUTES
         [ReadOnly]
+#endif
         public float radiansTransformed;
 
         private void OnValidate()

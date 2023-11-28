@@ -1,15 +1,19 @@
 ﻿using System;
+using UnityEditor;
 using UnityEngine;
 
 namespace Bipolar
 {
+    [Serializable]
     public struct Angle : IComparable<Angle>, IEquatable<Angle>
     {
-        public float Value { get; private set; }
+        [SerializeField]
+        private float value;
+        public float Value => value;
 
         private Angle(float angle)
         {
-            Value = angle;
+            value = angle;
         }
 
         public static Angle operator +(Angle angle, float addedValue) 
@@ -91,5 +95,20 @@ namespace Bipolar
 
         public static explicit operator Angle(float angle) => new Angle(angle);
         public static explicit operator float(Angle angle) => angle.Value;
+    }
+
+    [CustomPropertyDrawer(typeof(Angle))]
+    public class AnglePropertyDrawer : PropertyDrawer
+    {
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            EditorGUI.BeginProperty(position, label, property);
+            var valueProperty = property.FindPropertyRelative("value");
+            float degrees = EditorGUI.FloatField(position, label, ValueToDegrees(valueProperty.floatValue));
+            valueProperty.floatValue = Angle.FromDegrees(degrees).Value;
+            EditorGUI.EndProperty();
+        }
+
+        private static float ValueToDegrees(float value) => 180 * value;
     }
 }

@@ -8,7 +8,7 @@ namespace Bipolar
 {
     public class TimerBehavior : MonoBehaviour, ITimer
     {
-        public event System.Action OnElapsed;
+        public System.Action OnElapsed { get; set; }
 
         [SerializeField, Min(0)]
         private float speed = 1;

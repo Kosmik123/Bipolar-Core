@@ -7,12 +7,12 @@ using NaughtyAttributes;
 namespace Bipolar
 {
     [System.Serializable]
-    public class Timer : ITimer
+    public struct Timer : ITimer
     {
-        public event System.Action OnElapsed;
+        public System.Action OnElapsed { get; set; }
 
         [SerializeField, Min(0)]
-        private float speed = 1;
+        private float speed;
         public float Speed
         {
             get => speed;
@@ -45,7 +45,7 @@ namespace Bipolar
         }
 
         [SerializeField]
-        protected float time;
+        private float time;
         public float CurrentTime
         {
             get => time;
@@ -58,11 +58,15 @@ namespace Bipolar
         private MonoBehaviour owner;
         private Coroutine coroutine;
 
-        public Timer(MonoBehaviour owner, float speed = 1, float duration = 1)
+        public Timer(MonoBehaviour owner, float speed = 1, float duration = 1, System.Action onElapsed = null, bool autoReset = false)
         {
-            Init(owner);
-            Duration = duration;
-            Speed = speed;
+            this.owner = owner;
+            time = 0;
+            this.duration = duration;
+            this.speed = speed;
+            this.autoReset = autoReset;
+            OnElapsed = onElapsed;
+            coroutine = null;
         }
 
         public void Init(MonoBehaviour owner)
@@ -84,6 +88,12 @@ namespace Bipolar
         {
             time = 0;
             StopCounting();
+        }
+
+        public void Start(System.Action actionOnElapsed)
+        {
+            OnElapsed = actionOnElapsed;
+            Start();
         }
 
         public void Start()

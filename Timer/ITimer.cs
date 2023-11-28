@@ -5,7 +5,7 @@ namespace Bipolar
 {
     internal interface ITimer
     {
-        event System.Action OnElapsed;
+        System.Action OnElapsed { get; set; }
         float Speed { get; set; }
         float Duration { get; set; }
         float CurrentTime { get; set; }

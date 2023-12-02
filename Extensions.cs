@@ -10,6 +10,16 @@ namespace Bipolar
             return collection[Random.Range(0, collection.Count)];
         }
 
+        public static void LookHorizontallyAt(this Transform transform, Transform target)
+        {
+            LookHorizontallyAt(transform, target.position);
+        }
+
+        public static void LookHorizontallyAt(this Transform transform, Vector3 target)
+        {
+            target.y = transform.position.y;
+            transform.LookAt(target);
+        }
     }
 
 }

@@ -11,40 +11,34 @@ namespace Bipolar.UI
     {
         public event System.Action<string> OnTextChanged;
 
-        [SerializeField, HideInInspector]
         private Label label;
+        public Label Label
+        {
+            get
+            {
+                if (label == null)
+                    label = GetComponent<Label>();
+                return label;
+            }
+        }
 
-        [SerializeField]
         private string currentText;
-
-        private void Reset() => FillReference();
-
-        private void Awake()
-        {
-            if (label == null)
-                FillReference();
-        }
-
-        private void FillReference()
-        {
-            label = GetComponent<Label>();
-        }
 
         private void OnEnable()
         {
-            label.RegisterDirtyVerticesCallback(DetectTextChange);
+            Label.RegisterDirtyVerticesCallback(DetectTextChange);
             DetectTextChange();
         }
 
         private void DetectTextChange()
         {
-            currentText = label.text;
+            currentText = Label.text;
             OnTextChanged?.Invoke(currentText);
         }
 
         private void OnDisable()
         {
-            label.UnregisterDirtyVerticesCallback(DetectTextChange);
+            Label.UnregisterDirtyVerticesCallback(DetectTextChange);
         }
     }
 }

@@ -9,7 +9,9 @@ namespace Bipolar.UI
     [RequireComponent(typeof(Label))]
     public class TextChangeDetector : MonoBehaviour
     {
-        public event System.Action<string> OnTextChanged;
+        public delegate void TextChangeHandler(string newText);
+
+        public event TextChangeHandler OnTextChanged;
 
         private Label label;
         public Label Label

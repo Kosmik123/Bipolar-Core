@@ -6,7 +6,9 @@ namespace Bipolar.EventTriggers
 {
     public abstract class EventTrigger<T> : MonoBehaviour where T : BaseEventData
     {
-        public event System.Action<T> OnEventTriggered;
+        public delegate void EventTriggerHandler(T data);
+
+        public event EventTriggerHandler OnEventTriggered;
 
         [SerializeField]
         private UnityEvent<T> onEventTrigger;

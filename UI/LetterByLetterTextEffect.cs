@@ -1,37 +1,40 @@
-﻿using NaughtyAttributes;
+﻿using System;
 using System.Collections;
+using TMPro;
 using UnityEngine;
 
 namespace Bipolar.UI
 {
-    [RequireComponent (typeof(TextChangeDetector))]
+    [RequireComponent(typeof(TMP_Text))]
     public class LetterByLetterTextEffect : MonoBehaviour
     {
-        private TextChangeDetector textChangeDetector;
-        public TextChangeDetector Detector
+        private TMP_Text label;
+        public TMP_Text Label
         {
             get
             {
-                if (textChangeDetector == null)
-                    textChangeDetector = GetComponent<TextChangeDetector>();
-                return textChangeDetector;
+                if (label == null)
+                    label = GetComponent<TMP_Text>();
+                return label;
             }
         }
 
         [SerializeField]
-        private float everyLetterDelay = 0.1f;
+        private float everyLetterDelay = 0.05f;
 
         private string finalText;
         private string currentText;
+
+        public bool IsShowing => currentText != finalText;
 
         public const string AlphaTag = "<color=#00000000>";
 
         private void OnEnable()
         {
-            Detector.OnTextChanged += TextChangeDetector_OnTextChanged;
+            SetText(Label.text);
         }
 
-        private void TextChangeDetector_OnTextChanged(string newText)
+        public void SetText(string newText)
         {
             if (newText == finalText || newText == currentText)
                 return;
@@ -50,17 +53,16 @@ namespace Bipolar.UI
                 while (char.IsWhiteSpace(finalText[i]))
                     i++;
 
-                currentText = finalText.Insert(i, AlphaTag);
-                Detector.Label.text = currentText;
+                Label.text = currentText = finalText.Insert(i, AlphaTag);
                 yield return wait;
             }
-            currentText = finalText;
-            Detector.Label.text = currentText;
+            Label.text = currentText = finalText;
         }
 
-        private void OnDisable()
+        public void ForceEnd()
         {
-            Detector.OnTextChanged -= TextChangeDetector_OnTextChanged;
+            StopAllCoroutines();
+            Label.text = currentText = finalText;
         }
     }
 }

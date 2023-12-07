@@ -4,5 +4,6 @@ namespace Bipolar.Input
 {
     public interface IActionInputProvider
     {
+        event Action OnAction;
     }
 }

@@ -1,5 +1,4 @@
-﻿using Unity.Plastic.Antlr3.Runtime.Debug;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Events;
 
 namespace Bipolar.PhysicsEvents

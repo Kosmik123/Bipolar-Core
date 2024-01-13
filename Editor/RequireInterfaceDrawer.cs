@@ -2,7 +2,6 @@
 using UnityEditor;
 using System.Collections.Generic;
 using System.IO;
-using UnityEngine.Rendering;
 
 namespace Bipolar.Editor
 {
@@ -24,7 +23,8 @@ namespace Bipolar.Editor
                 property.objectReferenceValue = EditorGUI.ObjectField(objectFieldRect, label, property.objectReferenceValue, requiredAttribute.RequiredType, true);
                 if (GUI.Button(interfaceButtonRect, "I"))
                 {
-                    InterfacePickerWindow.Show(requiredAttribute.RequiredType);
+                    var window = InterfacePickerWindow.Show(requiredAttribute.RequiredType, property.objectReferenceValue);
+                    window.OnClosed += (obj) => AssignValue(property, obj);
                 }
 
                 EditorGUI.EndProperty();
@@ -37,6 +37,13 @@ namespace Bipolar.Editor
                 GUI.color = previousColor;
             }
         }
+
+        private void AssignValue (SerializedProperty property, Object @object)
+        {
+            property.objectReferenceValue = @object;
+            property.serializedObject.ApplyModifiedProperties();
+        }
+
     }
 
     public class InterfacePickerWindow : EditorWindow
@@ -46,7 +53,6 @@ namespace Bipolar.Editor
             public System.Type filteredType;
             public bool isFocused = false;
             public int tab;
-            public int itemIndex;
             public Object[] assetsOfType;
 
             public InterfacePickerWindowData(System.Type interfaceType)
@@ -55,6 +61,8 @@ namespace Bipolar.Editor
                 assetsOfType = GetAssetsOfType(interfaceType);
             }
         }
+
+        public event System.Action<Object> OnClosed;
 
         #region Constants
         private const string searchBoxName = "searchBox";
@@ -84,10 +92,12 @@ namespace Bipolar.Editor
 
         private InterfacePickerWindowData data;
         private float assetsViewScrollAmount;
+        private Object selectedObject;
 
-        public static InterfacePickerWindow Show(System.Type interfaceType)
+        public static InterfacePickerWindow Show(System.Type interfaceType, Object selectedObject)
         {
             var window = Get(interfaceType);
+            window.selectedObject = selectedObject;
             window.ShowUtility();
             return window;
         }
@@ -144,43 +154,45 @@ namespace Bipolar.Editor
             assetsViewScrollAmount = EditorGUILayout.BeginScrollView(new Vector2(0, assetsViewScrollAmount)).y;
 
             EditorGUIUtility.SetIconSize(new Vector2(16, 16));
-            int pressedAssetIndex = data.itemIndex;
-            if (DrawAssetListItem(0, "None"))
-                pressedAssetIndex = 0;
+            Object pressedObject = selectedObject;
+            bool wasPressed = false;
+            if (DrawAssetListItem(null))
+            {
+                wasPressed = true;
+                pressedObject = null;
+            }
             for (int i = 0; i < data.assetsOfType.Length; i++)
             {
-                Object asset = data.assetsOfType[i];
-                var image = AssetPreview.GetMiniThumbnail(asset);
-                if (DrawAssetListItem(i + 1, asset.name, image))
-                    pressedAssetIndex = i + 1;
+                var asset = data.assetsOfType[i];
+                if (DrawAssetListItem(asset))
+                {
+                    wasPressed = true;
+                    pressedObject = asset;
+                }
             }
-            data.itemIndex = pressedAssetIndex;
             EditorGUIUtility.SetIconSize(Vector2.zero);
-
             EditorGUILayout.EndScrollView();
-            
-            //string folderName = "Assets/Scripts";
-            //string[] filesNames = Directory.GetFiles(folderName);
-            //for (int i = 0; i < filesNames.Length; i++)
-            //{
-            //    filesNames[i] = filesNames[i].Replace('\\', '/');
-            //    var asset = AssetDatabase.LoadAssetAtPath<Object>(filesNames[i]);
-            //    var image = AssetPreview.GetMiniThumbnail(asset);
-            //    GUILayout.Label(new GUIContent(filesNames[i], image));    
-            //}
 
-            //GUILayout.BeginHorizontal();
-            //data.itemIndex = EditorGUILayout.Popup(data.itemIndex, filesNames, GUILayout.Width(100));
-            //GUILayout.EndHorizontal();
+            if (selectedObject == pressedObject && Event.current.clickCount > 1)
+            {
+                Event.current.clickCount = 0;
+                Close();
+            }
+
+            selectedObject = pressedObject;
         }
 
-        private bool DrawAssetListItem(int index, string assetName, Texture2D assetImage = null)
+
+        private bool DrawAssetListItem(Object asset)
         {
             bool wasPressed = false;
             GUILayout.BeginHorizontal();
-            GUILayout.Space(assetImage ? 20 : 36);
-            var style = index == data.itemIndex ? SelectedStyle : EditorStyles.label;
-            if (GUILayout.Button(new GUIContent(assetName, assetImage), style))
+
+            var image = AssetPreview.GetMiniThumbnail(asset);
+            GUILayout.Space(image ? 20 : 36);
+            string name = asset ? asset.name : "None";
+            var style = asset == selectedObject ? SelectedStyle : EditorStyles.label;
+            if (GUILayout.Button(new GUIContent(name, image), style))
                 wasPressed = true;
             GUILayout.EndHorizontal();
             return wasPressed;
@@ -192,11 +204,11 @@ namespace Bipolar.Editor
         /// <param name="type">The type to retrieve. eg typeof(GameObject).</param>
         /// <param name="fileExtension">The file extention the type uses eg ".prefab".</param>
         /// <returns>An Object array of assets.</returns>
-        public static Object[] GetAssetsOfType(System.Type type, string fileExtension = ".asset")
+        public static Object[] GetAssetsOfType(System.Type type, string fileExtension = "asset")
         {
             var foundObjectsList = new List<Object>();
             var directory = new DirectoryInfo(Application.dataPath);
-            var files = directory.GetFiles("*" + fileExtension, SearchOption.AllDirectories);
+            var files = directory.GetFiles($"*.{fileExtension}", SearchOption.AllDirectories);
 
             foreach (var fileInfo in files)
             {
@@ -220,14 +232,15 @@ namespace Bipolar.Editor
             return foundObjectsList.ToArray();
         }
 
-
-
-
-
-
         private void OnLostFocus()
         {
             Close();
+        }
+
+        private void OnDestroy()
+        {
+            OnClosed?.Invoke(selectedObject);
+            OnClosed = null;
         }
     }
 }

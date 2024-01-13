@@ -26,10 +26,7 @@ namespace Bipolar.Editor
                 property.objectReferenceValue = EditorGUI.ObjectField(objectFieldRect, label, property.objectReferenceValue, requiredAttribute.RequiredType, true);
                 if (GUI.Button(interfaceButtonRect, "I"))
                 {
-                    Debug.Log("HEJ");
-                    var window = InterfacePickerWindow.Get(requiredAttribute.RequiredType);
-                    window.ShowUtility();
-                    //PopupWindow.Show(interfaceButtonRect, new PopupExample());
+                    InterfacePickerWindow.Show(requiredAttribute.RequiredType);
                 }
 
                 EditorGUI.EndProperty();
@@ -41,36 +38,6 @@ namespace Bipolar.Editor
                 EditorGUI.LabelField(position, label, new GUIContent(errorMessage));
                 GUI.color = previousColor;
             }
-        }
-    }
-
-    public class PopupExample : PopupWindowContent
-    {
-        bool toggle1 = true;
-        bool toggle2 = true;
-        bool toggle3 = true;
-
-        public override Vector2 GetWindowSize()
-        {
-            return new Vector2(200, 150);
-        }
-
-        public override void OnGUI(Rect rect)
-        {
-            GUILayout.Label("Popup Options Example", EditorStyles.boldLabel);
-            toggle1 = EditorGUILayout.Toggle("Toggle 1", toggle1);
-            toggle2 = EditorGUILayout.Toggle("Toggle 2", toggle2);
-            toggle3 = EditorGUILayout.Toggle("Toggle 3", toggle3);
-        }
-
-        public override void OnOpen()
-        {
-            Debug.Log("Popup opened: " + this);
-        }
-
-        public override void OnClose()
-        {
-            Debug.Log("Popup closed: " + this);
         }
     }
 
@@ -96,7 +63,14 @@ namespace Bipolar.Editor
 
         private InterfacePickerWindowData data;
 
-        public static InterfacePickerWindow Get(System.Type interfaceType)
+        public static InterfacePickerWindow Show(System.Type interfaceType)
+        {
+            var window = Get(interfaceType);
+            window.ShowUtility();
+            return window;
+        }
+
+        private static InterfacePickerWindow Get(System.Type interfaceType)
         {
             var window = CreateInstance<InterfacePickerWindow>();
             window.titleContent = new GUIContent($"Select {interfaceType.Name}");
@@ -123,7 +97,7 @@ namespace Bipolar.Editor
         private void OnGUI()
         {
             GUI.SetNextControlName(searchBoxName);
-            var result = EditorGUILayout.TextField(string.Empty, EditorStyles.toolbarSearchField);
+            string filter = EditorGUILayout.TextField(string.Empty, EditorStyles.toolbarSearchField);
             if (data.isFocused == false)
             {
                 GUI.FocusControl(searchBoxName);
@@ -132,9 +106,17 @@ namespace Bipolar.Editor
 
             data.tab = GUILayout.Toolbar(data.tab, tabs, tabsLayout);
 
-            EditorGUILayout.LabelField("Interface Selector");
-            EditorGUILayout.IntField("Liczba", data.tab);
         }
+
+        private void LoadPanel(string folderName)
+        { }
+
+
+
+
+
+
+
 
         private void OnLostFocus()
         {

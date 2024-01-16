@@ -280,9 +280,10 @@ namespace Bipolar.Editor
                 if (derivedType.IsSubclassOf(typeof(ScriptableObject)))
                     filterBuilder.Append($"t:{derivedType.FullName} ");
             }
+            if (filterBuilder.Length < 1)
+                filterBuilder.Append("t:");
 
             var foundObjectsList = new List<ScriptableObject>();
-            var directory = new DirectoryInfo(Application.dataPath);
 
             var assetsGuids = AssetDatabase.FindAssets(filterBuilder.ToString());
             foreach (var assetGuid in assetsGuids)
@@ -296,7 +297,6 @@ namespace Bipolar.Editor
 
                 foundObjectsList.Add(asset);
             }
-
             return foundObjectsList.ToArray();
         }
 

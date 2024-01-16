@@ -81,6 +81,7 @@ namespace Bipolar.Editor
                     backgroundTexture.Apply();
 
                     _selectedStyle = new GUIStyle(EditorStyles.label);
+                    _selectedStyle.name = "Selected";
                     _selectedStyle.normal.textColor = Color.white;
                     _selectedStyle.normal.background = backgroundTexture;
                 }

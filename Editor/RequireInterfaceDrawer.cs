@@ -3,6 +3,7 @@ using UnityEditor;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using UnityEditor.VersionControl;
 
 namespace Bipolar.Editor
 {
@@ -66,6 +67,7 @@ namespace Bipolar.Editor
         public event System.Action<Object> OnClosed;
 
         #region Constants
+        private const string noneObjectName = "None";
         private const string searchBoxName = "searchBox";
         private static readonly string[] tabs = { "Assets", "Scene" };
         private static readonly GUILayoutOption[] tabsLayout = { GUILayout.MaxWidth(110) };
@@ -74,7 +76,7 @@ namespace Bipolar.Editor
         {
             get
             {
-                if (_selectedStyle == null)
+                if (_selectedStyle == null || _selectedStyle.normal.background == null)
                 {
                     var backgroundTexture = new Texture2D(1, 1);
                     backgroundTexture.SetPixel(0, 0, new Color32(62, 95, 150, 255));
@@ -175,17 +177,45 @@ namespace Bipolar.Editor
             {
                 pressedObject = null;
             }
+            foreach (var gameObject in gameObjectsWithCorrectComponent)
+            {
+                if (gameObject.name.ToLower().Contains(searchFilter.ToLower()))
+                {
+                    if (DrawGameObjectListItem(gameObject))
+                    {
+                        pressedObject = gameObject.GetComponent(data.filteredType);
+                    }
+                }
+            }
 
             EditorGUIUtility.SetIconSize(Vector2.zero);
             EditorGUILayout.EndScrollView();
+
+            if (selectedObject == pressedObject && Event.current.clickCount > 1)
+            {
+                Event.current.clickCount = 0;
+                Close();
+            }
+
+            selectedObject = pressedObject;
         }
         
-        private bool DrawGameObjectListItem(Object component)
+        private bool DrawGameObjectListItem(GameObject gameObject)
         {
-            return false;
+            bool wasPressed = false;
+            GUILayout.BeginHorizontal();
+            var objectContent = EditorGUIUtility.ObjectContent(gameObject, typeof(GameObject));
+            objectContent.text = gameObject ? gameObject.name : noneObjectName;
+            var style = EditorStyles.label;
+            if (selectedObject is Component component && component.gameObject == gameObject || selectedObject == gameObject)
+                style = SelectedStyle;
+
+            GUILayout.Space(20);
+            if (GUILayout.Button(objectContent, style))
+                wasPressed = true;
+            GUILayout.EndHorizontal();
+            return wasPressed;
         }
-
-
 
         private void DrawAssetsPanel()
         {
@@ -227,7 +257,7 @@ namespace Bipolar.Editor
 
             var image = AssetPreview.GetMiniThumbnail(asset);
             GUILayout.Space(image ? 20 : 36);
-            string name = asset ? asset.name : "None";
+            string name = asset ? asset.name : noneObjectName;
             var style = asset == selectedObject ? SelectedStyle : EditorStyles.label;
             if (GUILayout.Button(new GUIContent(name, image), style))
                 wasPressed = true;

@@ -95,6 +95,7 @@ namespace Bipolar.Editor
         private InterfacePickerWindowData data;
         private float assetsViewScrollAmount;
         private Object selectedObject;
+        private string searchFilter = "";
 
         public static InterfacePickerWindow Show(System.Type interfaceType, Object selectedObject)
         {
@@ -131,7 +132,7 @@ namespace Bipolar.Editor
         private void OnGUI()
         {
             GUI.SetNextControlName(searchBoxName);
-            string filter = EditorGUILayout.TextField(string.Empty, EditorStyles.toolbarSearchField);
+            searchFilter = EditorGUILayout.TextField(searchFilter, EditorStyles.toolbarSearchField);
             if (data.isFocused == false)
             {
                 GUI.FocusControl(searchBoxName);
@@ -161,12 +162,14 @@ namespace Bipolar.Editor
             {
                 pressedObject = null;
             }
-            for (int i = 0; i < data.assetsOfType.Length; i++)
+            foreach (var asset in data.assetsOfType)
             {
-                var asset = data.assetsOfType[i];
-                if (DrawAssetListItem(asset))
+                if (asset.name.ToLower().Contains(searchFilter.ToLower()))
                 {
-                    pressedObject = asset;
+                    if (DrawAssetListItem(asset))
+                    {
+                        pressedObject = asset;
+                    } 
                 }
             }
             EditorGUIUtility.SetIconSize(Vector2.zero);

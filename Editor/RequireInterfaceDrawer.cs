@@ -94,8 +94,10 @@ namespace Bipolar.Editor
 
         private InterfacePickerWindowData data;
         private float assetsViewScrollAmount;
+        private float sceneObjectsViewScrollAmount;
         private Object selectedObject;
         private string searchFilter = "";
+        private GameObject[] gameObjectsWithCorrectComponent;
 
         public static InterfacePickerWindow Show(System.Type interfaceType, Object selectedObject)
         {
@@ -110,6 +112,7 @@ namespace Bipolar.Editor
             var window = CreateInstance<InterfacePickerWindow>();
             window.titleContent = new GUIContent($"Select {interfaceType.Name}");
             window.data = GetData(interfaceType);
+            window.gameObjectsWithCorrectComponent = GetGameObjects(interfaceType);
             return window;
         }
 
@@ -127,6 +130,17 @@ namespace Bipolar.Editor
             var newData = new InterfacePickerWindowData(interfaceType);
             windowsByType[interfaceType] = newData;
             return newData;
+        }
+
+        private static GameObject[] GetGameObjects(System.Type interfaceType)
+        {
+            var gameObjectsWithComponent = new List<GameObject>();
+            var allGameObjects = FindObjectsOfType<GameObject>(true);
+            foreach (var gameObject in allGameObjects)
+                if (gameObject.TryGetComponent(interfaceType, out _))
+                    gameObjectsWithComponent.Add(gameObject);
+
+            return gameObjectsWithComponent.ToArray();
         }
 
         private void OnGUI()
@@ -147,9 +161,30 @@ namespace Bipolar.Editor
                     DrawAssetsPanel();
                     break;
                 case 1:
+                    DrawSceneObjectsPanel();
                     break;
             }
         }
+
+        private void DrawSceneObjectsPanel()
+        {
+            sceneObjectsViewScrollAmount = EditorGUILayout.BeginScrollView(new Vector2(0, sceneObjectsViewScrollAmount)).y;
+            EditorGUIUtility.SetIconSize(new Vector2(16, 16));
+            Object pressedObject = selectedObject;
+            if (DrawGameObjectListItem(null))
+            {
+                pressedObject = null;
+            }
+
+            EditorGUIUtility.SetIconSize(Vector2.zero);
+            EditorGUILayout.EndScrollView();
+        }
+        
+        private bool DrawGameObjectListItem(Object component)
+        {
+            return false;
+        }
+
 
 
         private void DrawAssetsPanel()

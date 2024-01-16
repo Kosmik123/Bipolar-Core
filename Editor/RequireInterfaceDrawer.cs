@@ -2,6 +2,7 @@
 using UnityEditor;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace Bipolar.Editor
 {
@@ -206,25 +207,26 @@ namespace Bipolar.Editor
         /// <returns>An Object array of assets.</returns>
         public static Object[] GetAssetsOfType(System.Type type, string fileExtension = "asset")
         {
+            var derivedTypes = TypeCache.GetTypesDerivedFrom(type);
+            var filterBuilder = new StringBuilder();
+            foreach (var derivedType in derivedTypes)
+            {
+                if (derivedType.IsSubclassOf(typeof(ScriptableObject)))
+                    filterBuilder.Append($"t:{derivedType.FullName} ");
+            }
+
             var foundObjectsList = new List<Object>();
             var directory = new DirectoryInfo(Application.dataPath);
-            var files = directory.GetFiles($"*.{fileExtension}", SearchOption.AllDirectories);
 
-            foreach (var fileInfo in files)
+            var assetsGuids = AssetDatabase.FindAssets(filterBuilder.ToString());
+            foreach (var assetGuid in assetsGuids)
             {
-                if (fileInfo == null)
-                    continue;
-
-                var assetFilePath = fileInfo.FullName.Replace("\\", "/").Replace(Application.dataPath, "Assets");
+                var assetFilePath = AssetDatabase.GUIDToAssetPath(assetGuid);
                 var asset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(assetFilePath);
                 if (asset == null)
-                {
                     continue;
-                }
                 else if (type.IsAssignableFrom(asset.GetType()) == false)
-                {
                     continue;
-                }
 
                 foundObjectsList.Add(asset);
             }

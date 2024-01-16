@@ -54,7 +54,7 @@ namespace Bipolar.Editor
             public System.Type filteredType;
             public bool isFocused = false;
             public int tab;
-            public Object[] assetsOfType;
+            public ScriptableObject[] assetsOfType;
 
             public InterfacePickerWindowData(System.Type interfaceType)
             {
@@ -138,29 +138,27 @@ namespace Bipolar.Editor
                 data.isFocused = true;
             }
 
-
             data.tab = GUILayout.Toolbar(data.tab, tabs, tabsLayout);
 
             switch (data.tab)
             {
                 case 0:
-                    LoadAssetsPanel();
+                    DrawAssetsPanel();
                     break;
                 case 1:
                     break;
             }
         }
 
-        private void LoadAssetsPanel()
+
+        private void DrawAssetsPanel()
         {
             assetsViewScrollAmount = EditorGUILayout.BeginScrollView(new Vector2(0, assetsViewScrollAmount)).y;
 
             EditorGUIUtility.SetIconSize(new Vector2(16, 16));
             Object pressedObject = selectedObject;
-            bool wasPressed = false;
             if (DrawAssetListItem(null))
             {
-                wasPressed = true;
                 pressedObject = null;
             }
             for (int i = 0; i < data.assetsOfType.Length; i++)
@@ -168,7 +166,6 @@ namespace Bipolar.Editor
                 var asset = data.assetsOfType[i];
                 if (DrawAssetListItem(asset))
                 {
-                    wasPressed = true;
                     pressedObject = asset;
                 }
             }
@@ -185,7 +182,7 @@ namespace Bipolar.Editor
         }
 
 
-        private bool DrawAssetListItem(Object asset)
+        private bool DrawAssetListItem(ScriptableObject asset)
         {
             bool wasPressed = false;
             GUILayout.BeginHorizontal();
@@ -206,7 +203,7 @@ namespace Bipolar.Editor
         /// <param name="type">The type to retrieve. eg typeof(GameObject).</param>
         /// <param name="fileExtension">The file extention the type uses eg ".prefab".</param>
         /// <returns>An Object array of assets.</returns>
-        public static Object[] GetAssetsOfType(System.Type type, string fileExtension = "asset")
+        public static ScriptableObject[] GetAssetsOfType(System.Type type, string fileExtension = "asset")
         {
             var derivedTypes = TypeCache.GetTypesDerivedFrom(type);
             var filterBuilder = new StringBuilder();
@@ -216,7 +213,7 @@ namespace Bipolar.Editor
                     filterBuilder.Append($"t:{derivedType.FullName} ");
             }
 
-            var foundObjectsList = new List<Object>();
+            var foundObjectsList = new List<ScriptableObject>();
             var directory = new DirectoryInfo(Application.dataPath);
 
             var assetsGuids = AssetDatabase.FindAssets(filterBuilder.ToString());

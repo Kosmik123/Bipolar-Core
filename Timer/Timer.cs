@@ -1,18 +1,18 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 #if NAUGHTY_ATTRIBUTES
 using NaughtyAttributes;
 #endif
 
-namespace Bipolar.Core
+namespace Bipolar
 {
     [System.Serializable]
-    public class Timer
+    public struct Timer : ITimer
     {
-        public event System.Action OnEnded;
+        public System.Action OnElapsed { get; set; }
 
-        [SerializeField]
-        private float speed = 1;
+        [SerializeField, Min(0)]
+        private float speed;
         public float Speed
         {
             get => speed;
@@ -22,7 +22,7 @@ namespace Bipolar.Core
             }
         }
 
-        [SerializeField]
+        [SerializeField, Min(0.0001f)]
         private float duration;
         public float Duration
         {
@@ -34,7 +34,18 @@ namespace Bipolar.Core
         }
 
         [SerializeField]
-        protected float time;
+        private bool autoReset;
+        public bool AutoReset
+        {
+            get => autoReset;
+            set
+            {
+                autoReset = value;
+            }
+        }
+
+        [SerializeField]
+        private float time;
         public float CurrentTime
         {
             get => time;
@@ -44,37 +55,33 @@ namespace Bipolar.Core
             }
         }
 
-        public float Progress
-        { 
-            get
-            {
-                if (isProgressCalculatedThisFrame == false)
-                {
-                    isProgressCalculatedThisFrame = true;
-                    progressCalculated = time / duration;
-                }
-                return progressCalculated;
-            }
-        }
-        private float progressCalculated;
-        private bool isProgressCalculatedThisFrame;
-
         private MonoBehaviour owner;
         private Coroutine coroutine;
 
-        public Timer(MonoBehaviour owner, float duration = 1, float speed = 1)
+        public Timer(MonoBehaviour owner, float speed = 1, float duration = 1, System.Action onElapsed = null, bool autoReset = false)
         {
-            Init(owner);
-            Duration = duration;
-            Speed = speed;
+            this.owner = owner;
+            time = 0;
+            this.duration = duration;
+            this.speed = speed;
+            this.autoReset = autoReset;
+            OnElapsed = onElapsed;
+            coroutine = null;
         }
 
-        protected void Init(MonoBehaviour owner)
+        public void Init(MonoBehaviour owner)
         {
             if (owner == null)
                 throw new System.ArgumentNullException();
             this.owner = owner;
             Reset();
+            Start();
+        }
+
+        public void Restart()
+        {
+            Reset();
+            Start();
         }
 
         public void Reset()
@@ -83,19 +90,27 @@ namespace Bipolar.Core
             StopCounting();
         }
 
+        public void Start(System.Action actionOnElapsed)
+        {
+            OnElapsed = actionOnElapsed;
+            Start();
+        }
+
         public void Start()
         {
-            StopCounting();
             coroutine = owner.StartCoroutine(UpdateCo());
         }
 
         private void StopCounting()
         {
             if (coroutine != null)
+            {
                 owner.StopCoroutine(coroutine);
+                coroutine = null;
+            }
         }
 
-        public void Pause()
+        public void Stop()
         {
             StopCounting();
         }
@@ -105,17 +120,16 @@ namespace Bipolar.Core
             while (true)
             {
                 yield return null;
-                time += speed * Time.deltaTime;
-                isProgressCalculatedThisFrame = false;
-                if (HasEnded())
-                    break;
+                TimerHelper.UpdateTimer(ref time, speed, duration, OnElapsedAction);
             }
-            OnEnded?.Invoke();
         }
 
-        private bool HasEnded()
+        private void OnElapsedAction()
         {
-            return speed < 0 ? time <= 0 : time >= duration;
+            if (autoReset == false) 
+                StopCounting();
+
+            OnElapsed?.Invoke();
         }
     }
 }

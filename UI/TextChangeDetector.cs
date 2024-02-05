@@ -9,42 +9,38 @@ namespace Bipolar.UI
     [RequireComponent(typeof(Label))]
     public class TextChangeDetector : MonoBehaviour
     {
-        public event System.Action<string> OnTextChanged;
+        public delegate void TextChangeHandler(string newText);
 
-        [SerializeField, HideInInspector]
+        public event TextChangeHandler OnTextChanged;
+
         private Label label;
+        public Label Label
+        {
+            get
+            {
+                if (label == null)
+                    label = GetComponent<Label>();
+                return label;
+            }
+        }
 
-        [SerializeField]
         private string currentText;
-
-        private void Reset() => FillReference();
-
-        private void Awake()
-        {
-            if (label == null)
-                FillReference();
-        }
-
-        private void FillReference()
-        {
-            label = GetComponent<Label>();
-        }
 
         private void OnEnable()
         {
-            label.RegisterDirtyVerticesCallback(DetectTextChange);
+            Label.RegisterDirtyVerticesCallback(DetectTextChange);
             DetectTextChange();
         }
 
         private void DetectTextChange()
         {
-            currentText = label.text;
+            currentText = Label.text;
             OnTextChanged?.Invoke(currentText);
         }
 
         private void OnDisable()
         {
-            label.UnregisterDirtyVerticesCallback(DetectTextChange);
+            Label.UnregisterDirtyVerticesCallback(DetectTextChange);
         }
     }
 }

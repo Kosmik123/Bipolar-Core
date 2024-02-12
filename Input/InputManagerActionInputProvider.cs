@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace Bipolar.Input
 {
-
     public abstract class InputManagerActionInputProvider : MonoBehaviour, IActionInputProvider
     {
         public event Action OnPerformed;

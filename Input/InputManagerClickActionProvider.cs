@@ -1,12 +1,11 @@
 ﻿using UnityEngine;
 using UnityEngine.UIElements;
-using UInput = UnityEngine.Input;
 
 namespace Bipolar.Input
 {
     public class InputManagerClickActionProvider : MonoBehaviour, IActionInputProvider
     {
-        public event System.Action OnAction;
+        public event System.Action OnPerformed;
 
         [SerializeField]
         private MouseButton button;
@@ -16,14 +15,14 @@ namespace Bipolar.Input
         private void Update()
         {
             int button = (int)this.button;
-            if (UInput.GetMouseButtonDown(button))
+            if (UnityEngine.Input.GetMouseButtonDown(button))
             {
                 isPressed = true;
             }
-            else if (UInput.GetMouseButtonUp(button))
+            else if (UnityEngine.Input.GetMouseButtonUp(button))
             {
                 if (isPressed)
-                    OnAction?.Invoke();
+                    OnPerformed?.Invoke();
                 isPressed = false;
             }
         }

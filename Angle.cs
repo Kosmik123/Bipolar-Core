@@ -97,6 +97,7 @@ namespace Bipolar
         public static explicit operator float(Angle angle) => angle.Value;
     }
 
+#if UNITY_EDITOR
     [CustomPropertyDrawer(typeof(Angle))]
     public class AnglePropertyDrawer : PropertyDrawer
     {
@@ -111,4 +112,5 @@ namespace Bipolar
 
         private static float ValueToDegrees(float value) => 180 * value;
     }
+#endif
 }

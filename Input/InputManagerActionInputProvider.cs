@@ -8,15 +8,19 @@ namespace Bipolar.Input
         public event Action OnPerformed;
 
         [SerializeField]
-        private KeyCode key;
+        private KeyCode[] keys;
 
         protected abstract Func<KeyCode, bool> CheckingMethod { get; }
 
         private void Update()
         {
-            if (CheckingMethod(key))
+            foreach (var key in keys)
             {
-                OnPerformed?.Invoke();
+                if (CheckingMethod(key))
+                {
+                    OnPerformed?.Invoke();
+                    return;
+                }
             }
         }
     }

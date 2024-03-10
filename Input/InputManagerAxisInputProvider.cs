@@ -1,14 +1,11 @@
 ﻿using UnityEngine;
-#if NAUGHTY_ATTRIBUTES
-using NaughtyAttributes;
-#endif
 
 namespace Bipolar.Input
 {
     public class InputManagerAxisInputProvider : MonoBehaviour, IAxisInputProvider
     {
 #if NAUGHTY_ATTRIBUTES
-        [InputAxis]
+        [NaughtyAttributes.InputAxis]
 #endif
         [SerializeField]
         private string axis;

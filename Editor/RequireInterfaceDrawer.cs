@@ -1,9 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
-using UnityEditor.VersionControl;
 
 namespace Bipolar.Editor
 {
@@ -125,7 +123,7 @@ namespace Bipolar.Editor
                 if (existingData != null)
                 {
                     existingData.isFocused = false;
-                    return existingData;
+                    return existingData; ;
                 }
             }
 
@@ -278,7 +276,7 @@ namespace Bipolar.Editor
             foreach (var derivedType in derivedTypes)
             {
                 if (derivedType.IsSubclassOf(typeof(ScriptableObject)))
-                    filterBuilder.Append($"t:{derivedType.FullName} ");
+                    filterBuilder.Append($"t:{derivedType.Name} ");
             }
             if (filterBuilder.Length < 1)
                 filterBuilder.Append("t:");

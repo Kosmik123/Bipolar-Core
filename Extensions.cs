@@ -20,6 +20,5 @@ namespace Bipolar
             target.y = transform.position.y;
             transform.LookAt(target);
         }
-    }
-
+    } 
 }

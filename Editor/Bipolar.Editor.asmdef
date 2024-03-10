@@ -1,0 +1,26 @@
+{
+    "name": "Bipolar.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:2ecd41d6ad0cd0748ab7fbaa1a919610",
+        "GUID:f88fb04354076c646a4107a491394033",
+        "GUID:3eae0364be2026648bf74846acb8a731"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.render-pipelines.core",
+            "expression": "5.1",
+            "define": "UNITY_SRP"
+        }
+    ],
+    "noEngineReferences": false
+}

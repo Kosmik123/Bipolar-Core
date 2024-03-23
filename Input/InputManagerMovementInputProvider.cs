@@ -1,20 +1,22 @@
 ﻿using UnityEngine;
-#if NAUGHTY_ATTRIBUTES
-using NaughtyAttributes;
-#endif
 
 namespace Bipolar.Input
 {
-    public class InputManagerMovementInputProvider : MonoBehaviour, IMoveInputProvider
+    public abstract class MovementInputProvider : MonoBehaviour, IMoveInputProvider
+    {
+        public abstract Vector2 GetMotion();
+    }
+
+    public class InputManagerMovementInputProvider : MovementInputProvider
     {
 #if NAUGHTY_ATTRIBUTES
-        [InputAxis]
+        [NaughtyAttributes.InputAxis]
 #endif
         [SerializeField]
         private string horizontalAxis = "Horizontal";
         
 #if NAUGHTY_ATTRIBUTES
-        [InputAxis]
+        [NaughtyAttributes.InputAxis]
 #endif
         [SerializeField]
         private string verticalAxis = "Vertical";
@@ -22,7 +24,7 @@ namespace Bipolar.Input
         [SerializeField]
         private bool rawInput;
 
-        public Vector2 GetMotion()
+        public override Vector2 GetMotion()
         {
             return new Vector2(GetAxis(horizontalAxis), GetAxis(verticalAxis));
         }

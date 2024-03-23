@@ -11,6 +11,11 @@ namespace Bipolar.Editor
         private const string errorMessage = "Property is not a reference type";
         private const int interfaceButtonWidth = 20;
 
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        {
+            return base.GetPropertyHeight(property, label);
+        }
+
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             if (property.propertyType == SerializedPropertyType.ObjectReference)
@@ -43,7 +48,6 @@ namespace Bipolar.Editor
             property.objectReferenceValue = @object;
             property.serializedObject.ApplyModifiedProperties();
         }
-
     }
 
     public class InterfacePickerWindow : EditorWindow
@@ -246,7 +250,6 @@ namespace Bipolar.Editor
 
             selectedObject = pressedObject;
         }
-
 
         private bool DrawAssetListItem(ScriptableObject asset)
         {

@@ -15,6 +15,7 @@ namespace Bipolar.Input.InputSystem
         
         [SerializeField]
         private InputActionReference inputAction;
+        
         [SerializeField]
         private AxisType axis;
 

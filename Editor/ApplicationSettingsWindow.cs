@@ -1,8 +1,5 @@
 using UnityEngine;
 using UnityEditor;
-#if NAUGHTY_ATTRIBUTES
-using NaughtyAttributes;
-#endif
 
 namespace Bipolar.Editor
 {
@@ -17,8 +14,14 @@ namespace Bipolar.Editor
 
         private void OnGUI()
         {
-            GUILayout.Label("Application Settings", EditorStyles.boldLabel);
+            ShowBasicApplicationSettings();
+            ShowCursorSettings();
+        }
+
+        private static void ShowBasicApplicationSettings()
+        {
             GUILayout.Space(10);
+            GUILayout.Label("Application Settings", EditorStyles.boldLabel);
 
             int targetFrameRate = Application.targetFrameRate;
             targetFrameRate = EditorGUILayout.IntField("Target Framerate", targetFrameRate);
@@ -31,10 +34,25 @@ namespace Bipolar.Editor
             Time.timeScale = timeScale;
         }
 
-        public void Refresh()
+
+        private static void ShowCursorSettings()
         {
+            GUILayout.Space(10);
+            GUILayout.Label("Cursor", EditorStyles.boldLabel);
+
+            bool isCursorVisible = Cursor.visible;
+            isCursorVisible = EditorGUILayout.Toggle("Visible", isCursorVisible);
+            Cursor.visible = isCursorVisible;
+
+            var lockState = Cursor.lockState;
+            lockState = (CursorLockMode)EditorGUILayout.EnumPopup("Lock State", lockState);
+            Cursor.lockState = lockState;
         }
 
 
+        public void Refresh()
+        {
+
+        }
     }
 }

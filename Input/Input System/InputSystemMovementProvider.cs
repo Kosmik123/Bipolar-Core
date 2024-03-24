@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 
 namespace Bipolar.Input.InputSystem
 {
-    public class InputSystemMoveInputProvider : MonoBehaviour, IMoveInputProvider
+    public class InputSystemMovementProvider : MonoBehaviour, IMoveInputProvider
     {
         [SerializeField]
         private InputActionReference moveAction;

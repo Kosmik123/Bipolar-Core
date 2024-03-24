@@ -7,7 +7,7 @@ namespace Bipolar.Input
         public abstract Vector2 GetMotion();
     }
 
-    public class InputManagerMovementInputProvider : MovementInputProvider
+    public class InputManagerMovementProvider : MovementInputProvider
     {
 #if NAUGHTY_ATTRIBUTES
         [NaughtyAttributes.InputAxis]

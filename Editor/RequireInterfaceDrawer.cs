@@ -25,7 +25,8 @@ namespace Bipolar.Editor
                 
                 var requiredAttribute = attribute as RequireInterfaceAttribute;
                 EditorGUI.BeginProperty(position, label, property);
-                property.objectReferenceValue = EditorGUI.ObjectField(objectFieldRect, label, property.objectReferenceValue, requiredAttribute.RequiredType, true);
+                var requiredType = requiredAttribute.RequiredType;
+                property.objectReferenceValue = EditorGUI.ObjectField(objectFieldRect, label, property.objectReferenceValue, requiredType, true);
                 if (GUI.Button(interfaceButtonRect, "I"))
                 {
                     var window = InterfacePickerWindow.Show(requiredAttribute.RequiredType, property.objectReferenceValue);

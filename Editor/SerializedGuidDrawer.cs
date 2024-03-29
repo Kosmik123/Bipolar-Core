@@ -50,7 +50,11 @@ namespace Bipolar.Editor
 
             bool isPrefabOverride = property.prefabOverride;
             EditorGUI.LabelField(labelRect, label, isPrefabOverride ? EditorStyles.boldLabel : EditorStyles.label);
+            var font = GUI.skin.font;
+            if (isPrefabOverride) 
+                GUI.skin.font = EditorStyles.boldFont;
             EditorGUI.TextField(textRect, backingGuid.ToString());
+            GUI.skin.font = font;
 
             if (GUI.Button(buttonRect, "New"))
             {

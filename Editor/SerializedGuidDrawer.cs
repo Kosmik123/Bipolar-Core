@@ -43,7 +43,7 @@ namespace Bipolar.Editor
             buttonRect.x += textRect.width + 1;
 
             var labelRect = textRect;
-            labelRect.width = EditorGUIUtility.labelWidth;
+            labelRect.width = EditorGUIUtility.labelWidth - EditorGUI.indentLevel * 15;
             
             textRect.x += labelRect.width + 2;
             textRect.width -= labelRect.width + 2;

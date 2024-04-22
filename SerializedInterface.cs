@@ -19,11 +19,13 @@ namespace Bipolar
             }
             set
             {
-                if ((value is Object @object) == false)
+                if (!(value is Object @object))
                     throw new System.InvalidCastException();
-
-                serializedObject = @object;
-                _value = value;
+                else
+                {
+                    serializedObject = @object;
+                    _value = value;
+                }
             }
         }
 

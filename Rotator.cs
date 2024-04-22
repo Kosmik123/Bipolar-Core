@@ -4,13 +4,13 @@ namespace Bipolar
 {
     public class Rotator : MonoBehaviour
     {
-        [SerializeField]
-        private Vector3 rotationSpeed;
+        [field: SerializeField]
+        public Vector3 RotationSpeed { get; set; }
 
         private void Update()
         {
             float dt = Time.deltaTime;
-            transform.Rotate(dt * rotationSpeed);
+            transform.Rotate(dt * RotationSpeed);
         }
     }
 }

@@ -48,7 +48,7 @@ namespace Bipolar
             b = BitConverter.ToInt16(bytes[4..]);
             c = BitConverter.ToInt16(bytes[6..]);
 #else
-            var bytes = input.ToByteArray();
+            var bytes = guid.ToByteArray();
             a = BitConverter.ToInt32(bytes, 0);
             b = BitConverter.ToInt16(bytes, 4);
             c = BitConverter.ToInt16(bytes, 6);

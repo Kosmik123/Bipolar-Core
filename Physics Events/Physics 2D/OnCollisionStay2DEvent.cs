@@ -2,8 +2,8 @@
 
 namespace Bipolar.PhysicsEvents
 {
-    public sealed class OnCollisionStay2DEvent : Physics2DEvent<Collision2D>
+    public sealed class OnCollisionStay2DEvent : Collision2DEvent
     {
-        private void OnCollisionStay2D(Collision2D collision) => Invoke(collision);
+        private void OnCollisionStay2D(Collision2D collision) => TryInvokeEvent(collision);
     }
 }

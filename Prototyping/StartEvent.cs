@@ -3,7 +3,7 @@ using UnityEngine.Events;
 
 namespace Bipolar.Prototyping
 {
-    public class Event : MonoBehaviour
+    public abstract class Event : MonoBehaviour
     {
         [SerializeField]
         private UnityEvent onEvent = new UnityEvent();
@@ -18,4 +18,5 @@ namespace Bipolar.Prototyping
     {
         private void Start() => InvokeEvent();
     }
+
 }

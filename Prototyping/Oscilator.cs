@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Bipolar
+namespace Bipolar.Prototyping
 {
     public class Oscilator : MonoBehaviour
     {
@@ -27,23 +27,33 @@ namespace Bipolar
         private void Update()
         {
             float time = Time.time;
-            transform.position = CalucalatePosition(time);
+            transform.position = CalculatePosition(time);
         }
 
-        private Vector3 CalucalatePosition(float time) => CalculatePosition(Amplitude, Offset, Frequency, Phase, time);
+        private Vector3 CalculatePosition(float time) => CalculatePosition(Amplitude, Offset, Frequency, Phase, time);
 
-        public static Vector3 CalculatePosition(Vector3 Amplitude, Vector3 Offset, Vector3 Frequency, Vector3 Phase, float time)
+        public static Vector3 CalculatePosition(Vector3 amplitude, Vector3 offset, Vector3 frequency, Vector3 phase, float time)
         {
             var position = new Vector3(
-                Mathf.Sin(Frequency.x * Mathf.PI * (time + Phase.x)),
-                Mathf.Sin(Frequency.y * Mathf.PI * (time + Phase.y)),
-                Mathf.Sin(Frequency.z * Mathf.PI * (time + Phase.z)));
-            position.Scale(Amplitude);
-            position += Offset;
+                Mathf.Sin(frequency.x * Mathf.PI * (time + phase.x)),
+                Mathf.Sin(frequency.y * Mathf.PI * (time + phase.y)),
+                Mathf.Sin(frequency.z * Mathf.PI * (time + phase.z)));
+
+            position.Scale(amplitude);
+            position += offset;
             return position;
+        }
+
+        private void OnDrawGizmosSelected()
+        {
+#if UNITY_EDITOR
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawSphere(CalculatePosition((float)UnityEditor.EditorApplication.timeSinceStartup), 0.1f);
+#endif
         }
     }
 
+#if UNITY_EDITOR
     [UnityEditor.CustomEditor(typeof(Oscilator))]
     public class OscillatorEditor : UnityEditor.Editor
     {
@@ -61,7 +71,7 @@ namespace Bipolar
             var amplitude = serializedObject.FindProperty("amplitude").vector3Value;
             var offset = serializedObject.FindProperty("offset").vector3Value;
             var phase = serializedObject.FindProperty("phase").vector3Value;
-            
+
             UnityEditor.Handles.color = Color.yellow;
             var previousPosition = Oscilator.CalculatePosition(amplitude, offset, frequencies, phase, 0);
             for (int i = 1; i <= resolution; i++)
@@ -88,5 +98,5 @@ namespace Bipolar
             return Gcd(c, Gcd(b, a, maxError), maxError);
         }
     }
-
+#endif
 }

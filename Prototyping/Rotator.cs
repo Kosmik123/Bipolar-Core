@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Bipolar
+namespace Bipolar.Prototyping
 {
     public class Rotator : MonoBehaviour
     {

@@ -23,10 +23,13 @@ namespace Bipolar.UI
             }
         }
 
+#if UNITY_EDITOR
         protected override void Reset()
         {
-           label = GetComponentInChildren<TMP_Text>();
+            base.Reset();
+            label = GetComponentInChildren<TMP_Text>();
         }
+#endif
 
         public override void OnPointerClick(PointerEventData eventData)
         {

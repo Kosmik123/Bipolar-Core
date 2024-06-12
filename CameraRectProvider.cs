@@ -8,9 +8,12 @@ namespace Bipolar
     }
 
     [RequireComponent(typeof(Camera))]
-    public class CameraRectProvider : MonoBehaviour, IRectProvider
+    public sealed class CameraRectProvider : MonoBehaviour, IRectProvider
     {
         private Camera _camera;
+
+        public static Rect GetRect(Camera camera) => 
+            new Rect(camera.transform.position, 2 * camera.orthographicSize * new Vector2(camera.aspect, 1));
 
         public Rect Rect
         {
@@ -18,8 +21,15 @@ namespace Bipolar
             {
                 if (_camera == null)
                     _camera = GetComponent<Camera>();
-                return new Rect(_camera.transform.position, 2 * _camera.orthographicSize * new Vector2(_camera.aspect, 1));
+                return GetRect(_camera);
             }
         }
     }
+
+    public static class CameraRectExtension
+    {
+        public static Rect GetRect(this Camera camera) => CameraRectProvider.GetRect(camera);
+    }
 }
+
+

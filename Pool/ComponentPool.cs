@@ -2,6 +2,6 @@
 
 namespace Bipolar.Pooling
 {
-    public class ComponentPool<T>: PoolBase<T> where T : Component
+    public class ComponentPool<T> : PoolBase<T> where T : Component
     { }
 }

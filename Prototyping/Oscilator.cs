@@ -24,10 +24,12 @@ namespace Bipolar.Prototyping
         private Vector3 phase;
         private Vector3 Phase { get => phase; set => phase = value; }
 
+        private float time;
+
         private void Update()
         {
-            float time = Time.time;
-            transform.position = CalculatePosition(time);
+            time += Time.deltaTime;
+            transform.localPosition = CalculatePosition(time);
         }
 
         private Vector3 CalculatePosition(float time) => CalculatePosition(Amplitude, Offset, Frequency, Phase, time);
@@ -47,8 +49,14 @@ namespace Bipolar.Prototyping
         private void OnDrawGizmosSelected()
         {
 #if UNITY_EDITOR
+            var matrix = Gizmos.matrix;
+            if (transform.parent)
+                matrix = transform.parent.localToWorldMatrix;
+
             Gizmos.color = Color.yellow;
-            Gizmos.DrawSphere(CalculatePosition((float)UnityEditor.EditorApplication.timeSinceStartup), 0.1f);
+            float time = Application.isPlaying ? Time.time : (float)UnityEditor.EditorApplication.timeSinceStartup;
+			Gizmos.DrawSphere(CalculatePosition(time), 0.1f);
+            Gizmos.matrix = matrix;
 #endif
         }
     }

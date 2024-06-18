@@ -1,8 +1,5 @@
 using UnityEngine;
 using UnityEngine.Events;
-#if NAUGHTY_ATTRIBUTES
-using NaughtyAttributes;
-#endif
 
 namespace Bipolar
 {
@@ -44,7 +41,7 @@ namespace Bipolar
         }
 
 #if NAUGHTY_ATTRIBUTES
-        [ReadOnly]
+        [NaughtyAttributes.ReadOnly]
 #endif
         [SerializeField]
         protected float time;
@@ -60,7 +57,17 @@ namespace Bipolar
         [SerializeField]
         private UnityEvent onElapsed;
 
-        private void Update()
+		public void Start()
+		{
+            enabled = true;
+		}
+
+        public void Stop()
+        {
+            enabled = false;
+        }
+
+		private void Update()
         {
             TimerHelper.UpdateTimer(ref time, speed, duration, OnElapsedAction);
         }

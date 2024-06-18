@@ -2,7 +2,7 @@
 
 namespace Bipolar.UI
 {
-    // Comment the class you are not using. Uncomment the class you are using
+    // Comment the class you are NOT using. Uncomment the class you are using
     //using Label = UnityEngine.UI.Text;
     using Label = TMPro.TMP_Text;
 
@@ -13,14 +13,14 @@ namespace Bipolar.UI
 
         public event TextChangeHandler OnTextChanged;
 
-        private Label label;
+        private Label _label;
         public Label Label
         {
             get
             {
-                if (label == null)
-                    label = GetComponent<Label>();
-                return label;
+                if (_label == null)
+                    _label = GetComponent<Label>();
+                return _label;
             }
         }
 
@@ -42,5 +42,9 @@ namespace Bipolar.UI
         {
             Label.UnregisterDirtyVerticesCallback(DetectTextChange);
         }
+    }
+
+    public static class LabelExtensions
+    {
     }
 }

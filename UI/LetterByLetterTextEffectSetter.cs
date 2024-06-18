@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using TMPro;
+using UnityEngine;
 
 namespace Bipolar.UI
 {
@@ -32,7 +34,7 @@ namespace Bipolar.UI
             Detector.OnTextChanged += TextChangeDetector_OnTextChanged;
         }
 
-        private void TextChangeDetector_OnTextChanged(string text)
+		private void TextChangeDetector_OnTextChanged(string text)
         {
             LetterByLetterTextEffect.SetText(text);
         }
@@ -42,4 +44,6 @@ namespace Bipolar.UI
             Detector.OnTextChanged -= TextChangeDetector_OnTextChanged;
         }
     }
+
+
 }

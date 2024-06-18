@@ -4,7 +4,7 @@ using UnityEngine.EventSystems;
 
 namespace Bipolar.UI
 {
-    public class UIButton : UnityEngine.UI.Button
+	public class UIButton : UnityEngine.UI.Button
     {
         public event System.Action OnClicked;
         public event System.Action<bool> OnHighlightChanged;
@@ -49,5 +49,4 @@ namespace Bipolar.UI
             OnHighlightChanged?.Invoke(false);
         }
     }
-
 }

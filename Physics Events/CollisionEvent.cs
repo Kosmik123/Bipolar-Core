@@ -9,7 +9,10 @@ namespace Bipolar.PhysicsEvents
 
         public event PhysicsEventHandler OnEvent;
 
-        [SerializeField, NaughtyAttributes.Tag]
+        [SerializeField]
+#if NAUGHTY_ATTRIBUTES
+        [NaughtyAttributes.Tag]
+#endif
         [Tooltip("Specify tags to check. If empty: all tags will trigger the event")]
         private string[] detectedTags;
 

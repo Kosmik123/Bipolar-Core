@@ -6,9 +6,9 @@ namespace Bipolar.UI
 {
 	public class UIButton : UnityEngine.UI.Button
     {
-        public event System.Action OnClicked;
-        public event System.Action<bool> OnHighlightChanged;
-        
+        public event System.Action<UIButton> OnClicked;
+        public event System.Action<UIButton, bool> OnHighlightChanged;
+
         [SerializeField]
         private TMP_Text label;
         public TMP_Text Label => label;
@@ -34,19 +34,19 @@ namespace Bipolar.UI
         public override void OnPointerClick(PointerEventData eventData)
         {
             base.OnPointerClick(eventData);
-            OnClicked?.Invoke();
+            OnClicked?.Invoke(this);
         }
 
         public override void OnPointerEnter(PointerEventData eventData)
         {
             base.OnPointerEnter(eventData);
-            OnHighlightChanged?.Invoke(true);
+            OnHighlightChanged?.Invoke(this, true);
         }
 
         public override void OnPointerExit(PointerEventData eventData)
         {
             base.OnPointerExit(eventData);
-            OnHighlightChanged?.Invoke(false);
+            OnHighlightChanged?.Invoke(this, false);
         }
     }
 }

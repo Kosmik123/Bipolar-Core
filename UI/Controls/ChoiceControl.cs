@@ -1,5 +1,4 @@
-﻿using Bipolar.Input;
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 
 namespace Bipolar.UI
@@ -34,9 +33,9 @@ namespace Bipolar.UI
 			choiceLabel.SetText(text);
 		}
 
-		protected void SwitchLeft() => Switch(-1);
+		protected void SwitchLeft(UIButton b) => Switch(-1);
 
-		protected void SwitchRight() => Switch(+1);
+		protected void SwitchRight(UIButton b) => Switch(+1);
 
         protected virtual void Switch(int dir)
         {

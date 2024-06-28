@@ -37,9 +37,9 @@ namespace Bipolar.Prototyping
         public static Vector3 CalculatePosition(Vector3 amplitude, Vector3 offset, Vector3 frequency, Vector3 phase, float time)
         {
             var position = new Vector3(
-                Mathf.Sin(frequency.x * Mathf.PI * (time + phase.x)),
-                Mathf.Sin(frequency.y * Mathf.PI * (time + phase.y)),
-                Mathf.Sin(frequency.z * Mathf.PI * (time + phase.z)));
+                Mathf.Sin(frequency.x * Mathf.PI * time + phase.x),
+                Mathf.Sin(frequency.y * Mathf.PI * time + phase.y),
+                Mathf.Sin(frequency.z * Mathf.PI * time + phase.z));
 
             position.Scale(amplitude);
             position += offset;
@@ -51,7 +51,7 @@ namespace Bipolar.Prototyping
 #if UNITY_EDITOR
             var matrix = Gizmos.matrix;
             if (transform.parent)
-                matrix = transform.parent.localToWorldMatrix;
+				Gizmos.matrix = transform.parent.localToWorldMatrix;
 
             Gizmos.color = Color.yellow;
             float time = Application.isPlaying ? Time.time : (float)UnityEditor.EditorApplication.timeSinceStartup;
@@ -69,6 +69,7 @@ namespace Bipolar.Prototyping
 
         public void OnSceneGUI()
         {
+            var transform = ((Component)target).transform;
             var frequencies = serializedObject.FindProperty("frequency").vector3Value;
 
             float frequency = Gcd3(frequencies.x, frequencies.y, frequencies.z);
@@ -81,14 +82,18 @@ namespace Bipolar.Prototyping
             var phase = serializedObject.FindProperty("phase").vector3Value;
 
             UnityEditor.Handles.color = Color.yellow;
-            var previousPosition = Oscilator.CalculatePosition(amplitude, offset, frequencies, phase, 0);
+            var matrix = UnityEditor.Handles.matrix;
+			if (transform.parent)
+				UnityEditor.Handles.matrix = transform.parent.localToWorldMatrix;
+			var previousPosition = Oscilator.CalculatePosition(amplitude, offset, frequencies, phase, 0);
             for (int i = 1; i <= resolution; i++)
             {
-                var position = Oscilator.CalculatePosition(amplitude, offset, frequencies, phase, i * dt);
-                UnityEditor.Handles.DrawLine(previousPosition, position);
-                previousPosition = position;
+                var localPosition = Oscilator.CalculatePosition(amplitude, offset, frequencies, phase, i * dt);
+                UnityEditor.Handles.DrawLine(previousPosition, localPosition);
+                previousPosition = localPosition;
             }
-        }
+            UnityEditor.Handles.matrix = matrix;
+		}
 
         private static float Gcd(float a, float b, float maxError)
         {

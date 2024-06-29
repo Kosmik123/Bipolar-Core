@@ -3,6 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using System.Reflection;
+using Bipolar.UI;
+using System.Linq.Expressions;
+using System.Linq;
+using System.Diagnostics.Contracts;
+
+
+
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -15,6 +23,21 @@ namespace Bipolar
         public class StringEvent : UnityEvent<string> { }
         public class FloatEvent : UnityEvent<float> { }
 
+        private static readonly Dictionary<Type, Type> unityEventTypesByArgumentType = new Dictionary<Type, Type>
+        {
+            //[typeof(int)] = typeof(IntEvent),
+            //[typeof(float)] = typeof(FloatEvent),
+            //[typeof(string)] = typeof(StringEvent),
+        };
+
+        public static Type GetUnityEventType(Type argumentType)
+        {
+            if (unityEventTypesByArgumentType.TryGetValue(argumentType, out var unityEventType))
+                return unityEventType;
+
+            return typeof(UnityEvent);
+        }
+
         [SerializeField]
         private Component component;
 
@@ -24,34 +47,60 @@ namespace Bipolar
         [System.Serializable]
         public class EventData
         {
+            #region serialized
             public string eventName;
-
             [SerializeReference]
-            public UnityEventBase UnityEvent;
+            public UnityEventBase unityEvent;
+            #endregion
+            #region runtime
+            public EventInfo EventInfo { get; set; }
+            public Delegate InvokeDelegate { get; set; }
+            #endregion
+        }
+
+        private void Awake()
+        {
+            if (component == null)
+                return;
+
+            var componentType = component.GetType();
+            var events = componentType.GetEvents();
+            int count = Mathf.Min(events.Length, eventsData.Length);
+            var invokeUnityEventInfo = typeof(UnityEvent).GetMethod(nameof(UnityEvent.Invoke));
+
+            for (int i = 0; i < count; i++)
+            {
+                var eventInfo = events[i];
+                var unityEventData = eventsData[i];
+                unityEventData.EventInfo = eventInfo;
+
+                Type eventHandlerType = eventInfo.EventHandlerType;
+                MethodInfo actionInvoke = eventHandlerType.GetMethod(nameof(Action.Invoke));
+                ParameterInfo[] parameters = actionInvoke.GetParameters();
+                ParameterExpression[] parameterExpressions = parameters.Select(p => Expression.Parameter(p.ParameterType, p.Name)).ToArray();
+
+                Expression instanceExpression = Expression.Constant(unityEventData.unityEvent);
+                Expression body = Expression.Call(instanceExpression, invokeUnityEventInfo);
+
+                LambdaExpression lambda = Expression.Lambda(eventHandlerType, body, parameterExpressions);
+                Delegate handlerDelegate = lambda.Compile();
+
+                unityEventData.InvokeDelegate = handlerDelegate;
+
+                //eventInfo.AddEventHandler(component, handlerDelegate);
+                //var del = Delegate.CreateDelegate(typeof(Action), unityEventData.UnityEvent, invokeUnityEventInfo);
+            }
+        }
+
+        private void OnEnable()
+        {
+            
         }
 
 #if UNITY_EDITOR
         [CustomEditor(typeof(ComponentEvents))]
         public class ComponentEventsEditor : Editor
         {
-            private static readonly Dictionary<Type, Type> unityEventTypesByArgumentType = new Dictionary<Type, Type>
-            {
-                [typeof(int)] = typeof(IntEvent),
-                [typeof(float)] = typeof(FloatEvent),
-                [typeof(string)] = typeof(StringEvent),
-            };
-
-            private readonly Dictionary<string, string> alreadySerializedEventNamesAndTypes = new Dictionary<string, string>();
-            private readonly Dictionary<string, EventData> newEventDataByName = new Dictionary<string, EventData>();
-
-            public static Type GetUnityEventType(Type argumentType)
-            {
-                if (unityEventTypesByArgumentType.TryGetValue(argumentType, out var unityEventType))
-                    return unityEventType;
-
-                return typeof(UnityEvent);
-            }
-
             public override void OnInspectorGUI()
             {
                 bool somethingChanged = false;
@@ -62,9 +111,6 @@ namespace Bipolar
                 var component = serializedObject.FindProperty(nameof(ComponentEvents.component))?.objectReferenceValue;
                 if (component == null)
                     return;
-
-                alreadySerializedEventNamesAndTypes.Clear();
-                newEventDataByName.Clear();
 
                 var componentType = component.GetType();
                 var events = componentType.GetEvents();
@@ -86,61 +132,11 @@ namespace Bipolar
                     }
                     else
                     {
-                        eventsDataProperty.InsertArrayElementAtIndex(i);
-                        var newProperty = eventsDataProperty.GetArrayElementAtIndex(i);
+                        var newProperty = InsertArrayElementAtIndex(eventsDataProperty, i);
                         newProperty.managedReferenceValue = CreateUnityEventData(componentEvent, componentType);
                     }
                 }
                 eventsDataProperty.arraySize = events.Length;
-
-
-                /*
-                //for (int i = 0; i < eventsDataProperty.arraySize; i++)
-                //{
-                //    var eventDatumProperty = eventsDataProperty.GetArrayElementAtIndex(i);
-                //    string eventName = eventDatumProperty?.FindPropertyRelative(nameof(EventData.eventName))?.stringValue;
-                //    string eventType = eventDatumProperty?.FindPropertyRelative(nameof(EventData.UnityEvent))?.type;
-
-                //    alreadySerializedEventNamesAndTypes.Add(eventName, eventType);
-                //}
-
-                //for (int i = 0; i < events.Length; i++)
-                //{
-                //    //var arrayElementProperty = eventsProperty.GetArrayElementAtIndex(i);
-                //    //if (arrayElementProperty.managedReferenceFullTypename.Length > 0)
-                //    //    continue;
-
-                //    var componentEventInfo = events[i];
-                //    string eventName = componentEventInfo.Name;
-
-
-
-
-                //    if (alreadySerializedEventNamesAndTypes.ContainsKey(eventName) == false)
-                //    {
-                //        var eventData = CreateUnityEventData(componentEventInfo, componentType);
-                //        newEventDataByName.Add(eventName, eventData);
-                //    }
-                //}
-
-                //eventsDataProperty.arraySize = events.Length; // to na pewno
-                //for (int i = 0; i < eventsDataProperty.arraySize; i++)
-                //{
-                //    var serializedEvent = eventsDataProperty.GetArrayElementAtIndex(i);
-                //    string eventDataName = serializedEvent?.FindPropertyRelative("eventName")?.stringValue;
-                //    if (Array.FindIndex(events, ev => ev.Name == eventDataName) < 0)
-                //    {
-                //        serializedEvent.managedReferenceValue = newEventDataByName[eventDataName];
-                //    }
-                //}
-
-
-                //    for (int i = 0; i < unityEventDataList.Count; i++)
-                //{
-                //    var singleEventProperty = eventsProperty.GetArrayElementAtIndex(i);
-                //    singleEventProperty.managedReferenceValue = unityEventDataList[i];
-                //}
-                */
 
                 EditorGUILayout.Space();
                 EditorGUI.BeginChangeCheck();
@@ -148,11 +144,18 @@ namespace Bipolar
                 {
                     var eventProperty = eventsDataProperty.GetArrayElementAtIndex(i);
                     var label = new GUIContent(ObjectNames.NicifyVariableName(GetEventDataName(eventProperty)));
-                    EditorGUILayout.PropertyField(eventProperty.FindPropertyRelative(nameof(EventData.UnityEvent)), label);
+                    EditorGUILayout.PropertyField(eventProperty.FindPropertyRelative(nameof(EventData.unityEvent)), label);
                 }
                 somethingChanged |= EditorGUI.EndChangeCheck();
                 if (somethingChanged)
                     serializedObject.ApplyModifiedProperties();
+            }
+
+            private static SerializedProperty InsertArrayElementAtIndex(SerializedProperty arrayProperty, int i)
+            {
+                arrayProperty.InsertArrayElementAtIndex(i);
+                var addedElement = arrayProperty.GetArrayElementAtIndex(i);
+                return addedElement;
             }
 
             private static string GetEventDataName(SerializedProperty property)
@@ -179,7 +182,7 @@ namespace Bipolar
                 var unityEventInstance = (UnityEventBase)Activator.CreateInstance(eventDataType);
                 return new EventData()
                 {
-                    UnityEvent = unityEventInstance,
+                    unityEvent = unityEventInstance,
                     eventName = componentEvent.Name,
                 };
             }
@@ -198,8 +201,6 @@ namespace Bipolar
 
                 return -1;
             }
-
-
         }
 
 #endif

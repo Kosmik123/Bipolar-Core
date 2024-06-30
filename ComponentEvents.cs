@@ -11,7 +11,7 @@ using UnityEditor;
 
 namespace Bipolar
 {
-    public sealed partial class ComponentEvents : MonoBehaviour
+    public sealed class ComponentEvents : MonoBehaviour
     {
         private static readonly Dictionary<Type, Type> eventDataTypesByArgumentType = new Dictionary<Type, Type>
         {
@@ -28,9 +28,6 @@ namespace Bipolar
 
             return null;
         }
-
-        [SerializeReference]
-        public UnityEventBase[] testUnityEvents;
 
         [SerializeField]
         private Component component;
@@ -97,9 +94,11 @@ namespace Bipolar
 
         private void Awake()
         {
-            DateTime start = DateTime.Now;
             if (component == null)
+            {
+                Destroy(this);
                 return;
+            }
 
             var componentType = component.GetType();
             var events = componentType.GetEvents();
@@ -141,7 +140,6 @@ namespace Bipolar
                 LambdaExpression lambda = Expression.Lambda(eventInfo.EventHandlerType, body, eventParameters);
                 unityEventData.InvokeDelegate = lambda.Compile();
             }
-            TimeSpan duration = DateTime.Now - start;
             Debug.Log(duration);
         }
 

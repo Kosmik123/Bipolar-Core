@@ -3,13 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using System.Reflection;
-using Bipolar.UI;
 using System.Linq.Expressions;
 using System.Linq;
-using System.Diagnostics.Contracts;
-
-
-
+using UnityEngine.UIElements;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -17,45 +13,63 @@ using UnityEditor;
 
 namespace Bipolar
 {
-    public sealed class ComponentEvents : MonoBehaviour
+    public sealed partial class ComponentEvents : MonoBehaviour
     {
-        public class IntEvent : UnityEvent<int> { }
-        public class StringEvent : UnityEvent<string> { }
-        public class FloatEvent : UnityEvent<float> { }
-
-        private static readonly Dictionary<Type, Type> unityEventTypesByArgumentType = new Dictionary<Type, Type>
+        private static readonly Dictionary<Type, Type> eventDataTypesByArgumentType = new Dictionary<Type, Type>
         {
-            //[typeof(int)] = typeof(IntEvent),
+            [typeof(int)] = typeof(EventDataInt),
             //[typeof(float)] = typeof(FloatEvent),
             //[typeof(string)] = typeof(StringEvent),
         };
 
-        public static Type GetUnityEventType(Type argumentType)
+        public static Type GetEventDataType(Type argumentType)
         {
-            if (unityEventTypesByArgumentType.TryGetValue(argumentType, out var unityEventType))
+            if (eventDataTypesByArgumentType.TryGetValue(argumentType, out var unityEventType))
                 return unityEventType;
 
-            return typeof(UnityEvent);
+            return typeof(EventData);
         }
+
+        [SerializeReference]
+        public UnityEventBase[] testUnityEvents;
 
         [SerializeField]
         private Component component;
 
-        [SerializeReference, HideInInspector]
-        private EventData[] eventsData;
+        [SerializeReference]
+        private BaseEventData[] eventsData;
 
         [System.Serializable]
-        public class EventData
+        private abstract class BaseEventData
         {
-            #region serialized
             public string eventName;
-            [SerializeReference]
-            public UnityEventBase unityEvent;
-            #endregion
-            #region runtime
+            public abstract UnityEventBase UnityEvent { get; }
             public EventInfo EventInfo { get; set; }
             public Delegate InvokeDelegate { get; set; }
-            #endregion
+
+            internal void Clear()
+            {
+                eventName = null;
+                InvokeDelegate = null;
+                EventInfo = null;
+                UnityEvent.RemoveAllListeners();
+            }
+        }
+
+        [System.Serializable]
+        private class EventData : BaseEventData
+        {
+            [SerializeField]
+            internal UnityEvent unityEvent;
+            public override UnityEventBase UnityEvent => unityEvent;
+        }
+
+        [System.Serializable]
+        private class EventDataInt : BaseEventData
+        {
+            [SerializeField]
+            internal UnityEvent<int> unityEvent;
+            public override UnityEventBase UnityEvent => unityEvent;
         }
 
         private void Awake()
@@ -79,22 +93,35 @@ namespace Bipolar
                 ParameterInfo[] parameters = actionInvoke.GetParameters();
                 ParameterExpression[] parameterExpressions = parameters.Select(p => Expression.Parameter(p.ParameterType, p.Name)).ToArray();
 
-                Expression instanceExpression = Expression.Constant(unityEventData.unityEvent);
+                Expression instanceExpression = Expression.Constant(unityEventData.UnityEvent);
                 Expression body = Expression.Call(instanceExpression, invokeUnityEventInfo);
 
                 LambdaExpression lambda = Expression.Lambda(eventHandlerType, body, parameterExpressions);
-                Delegate handlerDelegate = lambda.Compile();
+                unityEventData.InvokeDelegate = lambda.Compile();
 
-                unityEventData.InvokeDelegate = handlerDelegate;
-
-                //eventInfo.AddEventHandler(component, handlerDelegate);
                 //var del = Delegate.CreateDelegate(typeof(Action), unityEventData.UnityEvent, invokeUnityEventInfo);
             }
         }
 
         private void OnEnable()
         {
-            
+            foreach (var eventDatum in eventsData)
+                eventDatum?.EventInfo?.AddEventHandler(component, eventDatum.InvokeDelegate);
+        }
+
+        private void OnDisable()
+        {
+            foreach (var eventDatum in eventsData)
+                eventDatum?.EventInfo?.AddEventHandler(component, eventDatum.InvokeDelegate);
+        }
+
+        private void OnDestroy()
+        {
+            for (int i = 0; i < eventsData.Length; i++)
+            {
+                eventsData[i].Clear();
+                eventsData[i] = null;
+            }
         }
 
 #if UNITY_EDITOR
@@ -103,12 +130,18 @@ namespace Bipolar
         {
             public override void OnInspectorGUI()
             {
-                bool somethingChanged = false;
-                EditorGUI.BeginChangeCheck();
-                base.OnInspectorGUI();
-                somethingChanged |= EditorGUI.EndChangeCheck();
+                //base.OnInspectorGUI();
 
-                var component = serializedObject.FindProperty(nameof(ComponentEvents.component))?.objectReferenceValue;
+                using (new EditorGUI.DisabledScope(true))
+                    EditorGUILayout.ObjectField("Script", MonoScript.FromMonoBehaviour((MonoBehaviour)target), GetType(), false);
+
+                var componentProperty = serializedObject.FindProperty(nameof(ComponentEvents.component));
+                EditorGUI.BeginChangeCheck();
+                EditorGUILayout.PropertyField(componentProperty);
+                if (EditorGUI.EndChangeCheck())
+                    serializedObject.ApplyModifiedProperties();
+
+                var component = componentProperty?.objectReferenceValue;
                 if (component == null)
                     return;
 
@@ -116,6 +149,7 @@ namespace Bipolar
                 var events = componentType.GetEvents();
                 var eventsToSerialize = new List<EventInfo>(events);
 
+                bool somethingChanged = false;
                 var eventsDataProperty = serializedObject.FindProperty(nameof(ComponentEvents.eventsData));
                 eventsDataProperty.arraySize = Mathf.Max(eventsDataProperty.arraySize, events.Length);
                 for (int i = 0; i < events.Length; i++)
@@ -125,15 +159,31 @@ namespace Bipolar
                     bool CompareNames(SerializedProperty property) =>
                         GetEventDataName(property) == componentEvent.Name;
 
-                    if (serializedEventIndex >= 0)
+                    if (serializedEventIndex < 0)
                     {
-                        if (serializedEventIndex != i)
-                            eventsDataProperty.MoveArrayElement(serializedEventIndex, i);
+                        var newProperty = InsertArrayElementAtIndex(eventsDataProperty, i);
+                        CreateNewEventDataInProperty(newProperty, componentType, componentEvent);
+
+                        //var unityEventProperty = newProperty.FindPropertyRelative("unityEvent");
+                        //unityEventProperty.managedReferenceValue = CreateUnityEvent(componentEvent, componentType);
+
+                        somethingChanged = true;
                     }
                     else
                     {
-                        var newProperty = InsertArrayElementAtIndex(eventsDataProperty, i);
-                        newProperty.managedReferenceValue = CreateUnityEventData(componentEvent, componentType);
+                        var singleEventProperty = eventsDataProperty.GetArrayElementAtIndex(i);
+                        var correctEventType = GetEventDataType(componentEvent.EventHandlerType, componentType);
+                        if (CheckType(singleEventProperty, correctEventType) == false)
+                        {
+                            CreateNewEventDataInProperty(singleEventProperty, componentType, componentEvent);
+                            somethingChanged = true;
+                        }
+
+                        if (serializedEventIndex != i)
+                        {
+                            eventsDataProperty.MoveArrayElement(serializedEventIndex, i);
+                            somethingChanged = true;
+                        }
                     }
                 }
                 eventsDataProperty.arraySize = events.Length;
@@ -143,12 +193,33 @@ namespace Bipolar
                 for (int i = 0; i < eventsDataProperty.arraySize; i++)
                 {
                     var eventProperty = eventsDataProperty.GetArrayElementAtIndex(i);
-                    var label = new GUIContent(ObjectNames.NicifyVariableName(GetEventDataName(eventProperty)));
-                    EditorGUILayout.PropertyField(eventProperty.FindPropertyRelative(nameof(EventData.unityEvent)), label);
+                    var unityEventProperty = eventProperty?.FindPropertyRelative("unityEvent");
+                    if (unityEventProperty != null)
+                    {
+                        var label = new GUIContent(ObjectNames.NicifyVariableName(GetEventDataName(eventProperty)));
+                        EditorGUILayout.PropertyField(unityEventProperty, label);
+                    }
                 }
                 somethingChanged |= EditorGUI.EndChangeCheck();
                 if (somethingChanged)
                     serializedObject.ApplyModifiedProperties();
+            }
+
+            private static void CreateNewEventDataInProperty(SerializedProperty property, Type componentType, EventInfo componentEvent)
+            {
+                property.managedReferenceValue = CreateEventData(componentEvent, componentType);
+                property.FindPropertyRelative(nameof(EventData.eventName)).stringValue = componentEvent.Name;
+            }
+
+            private static bool CheckType(SerializedProperty eventDataProperty, Type correctEventType)
+            {
+                string correctEventTypeName = correctEventType.Name;
+                string eventTypeName = eventDataProperty.type;
+                int realTypeNameStart = eventTypeName.IndexOf('<') + 1;
+                int realTypeNameLength = eventTypeName.IndexOf('>') - realTypeNameStart;
+                eventTypeName = eventTypeName.Substring(realTypeNameStart, realTypeNameLength);
+                bool isCorrect = eventTypeName == correctEventTypeName;
+                return isCorrect;
             }
 
             private static SerializedProperty InsertArrayElementAtIndex(SerializedProperty arrayProperty, int i)
@@ -163,29 +234,51 @@ namespace Bipolar
                 return property?.FindPropertyRelative(nameof(EventData.eventName))?.stringValue;
             }
 
-            private static EventData CreateUnityEventData(EventInfo componentEvent, Type componentType)
+            private static BaseEventData CreateEventData(EventInfo componentEvent, Type componentType)
             {
                 var eventHandlerType = componentEvent.EventHandlerType;
-                var genericTypeArguments = eventHandlerType.GenericTypeArguments;
+                Type eventDataType = GetEventDataType(eventHandlerType, componentType);
 
-                Type eventDataType = typeof(UnityEvent);
+                var unityEventInstance = (BaseEventData)Activator.CreateInstance(eventDataType);
+                return unityEventInstance;
+            }
+
+            private static Type GetEventDataType(Type eventHandlerType, Type componentType)
+            {
+                var genericTypeArguments = eventHandlerType.GenericTypeArguments;
+                Type eventDataType = typeof(EventData);
                 if (genericTypeArguments != null && genericTypeArguments.Length != 0)
                 {
                     int argumentIndex = genericTypeArguments[0] == componentType ? 1 : 0;
-                    if (argumentIndex > 0 && genericTypeArguments.Length > 1)
+                    if (argumentIndex < genericTypeArguments.Length)
                     {
                         var argumentType = genericTypeArguments[argumentIndex];
-                        eventDataType = GetUnityEventType(argumentType);
+                        eventDataType = ComponentEvents.GetEventDataType(argumentType);
                     }
                 }
 
-                var unityEventInstance = (UnityEventBase)Activator.CreateInstance(eventDataType);
-                return new EventData()
-                {
-                    unityEvent = unityEventInstance,
-                    eventName = componentEvent.Name,
-                };
+                return eventDataType;
             }
+
+            //private static UnityEventBase CreateUnityEvent(EventInfo componentEvent, Type componentType)
+            //{
+            //    var eventHandlerType = componentEvent.EventHandlerType;
+            //    var genericTypeArguments = eventHandlerType.GenericTypeArguments;
+
+            //    Type eventDataType = typeof(IntEvent);
+            //    if (false && genericTypeArguments != null && genericTypeArguments.Length != 0)
+            //    {
+            //        int argumentIndex = genericTypeArguments[0] == componentType ? 1 : 0;
+            //        if (argumentIndex < genericTypeArguments.Length)
+            //        {
+            //            var argumentType = genericTypeArguments[argumentIndex];
+            //            eventDataType = GetEventDataType(argumentType);
+            //        }
+            //    }
+
+            //    var unityEventInstance = (UnityEventBase)Activator.CreateInstance(eventDataType);
+            //    return unityEventInstance;
+            //}
 
             public static int FindIndex(SerializedProperty arrayProperty, Predicate<SerializedProperty> predicate)
             {

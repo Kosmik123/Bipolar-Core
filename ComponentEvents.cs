@@ -5,11 +5,6 @@ using UnityEngine.Events;
 using System.Reflection;
 using System.Linq.Expressions;
 using System.Linq;
-using UnityEngine.UIElements;
-using UnityEditor.Hardware;
-using UnityEditor.PackageManager;
-
-
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -21,6 +16,7 @@ namespace Bipolar
         private static readonly Dictionary<Type, Type> eventDataTypesByArgumentType = new Dictionary<Type, Type>
         {
             [typeof(int)] = typeof(EventDataInt),
+            [typeof(bool)] = typeof(EventDataBool),
             [typeof(float)] = typeof(EventDataFloat),
             [typeof(string)] = typeof(EventDataString),
         };
@@ -30,7 +26,7 @@ namespace Bipolar
             if (eventDataTypesByArgumentType.TryGetValue(argumentType, out var unityEventType))
                 return unityEventType;
 
-            return typeof(EventData);
+            return null;
         }
 
         [SerializeReference]
@@ -73,8 +69,8 @@ namespace Bipolar
             [SerializeField]
             internal UnityEvent<int> unityEvent;
             public override UnityEventBase UnityEvent => unityEvent;
-        }      
-        
+        }
+
         [System.Serializable]
         private class EventDataFloat : BaseEventData
         {
@@ -82,7 +78,7 @@ namespace Bipolar
             internal UnityEvent<float> unityEvent;
             public override UnityEventBase UnityEvent => unityEvent;
         }
-        
+
         [System.Serializable]
         private class EventDataString : BaseEventData
         {
@@ -91,16 +87,23 @@ namespace Bipolar
             public override UnityEventBase UnityEvent => unityEvent;
         }
 
+        [System.Serializable]
+        private class EventDataBool : BaseEventData
+        {
+            [SerializeField]
+            internal UnityEvent<bool> unityEvent;
+            public override UnityEventBase UnityEvent => unityEvent;
+        }
 
         private void Awake()
         {
+            DateTime start = DateTime.Now;
             if (component == null)
                 return;
 
             var componentType = component.GetType();
             var events = componentType.GetEvents();
             int count = Mathf.Min(events.Length, eventsData.Length);
-            var invokeUnityEventInfo = typeof(UnityEvent).GetMethod(nameof(UnityEvent.Invoke));
 
             for (int i = 0; i < count; i++)
             {
@@ -108,19 +111,46 @@ namespace Bipolar
                 var unityEventData = eventsData[i];
                 unityEventData.EventInfo = eventInfo;
 
-                Type eventHandlerType = eventInfo.EventHandlerType;
-                MethodInfo actionInvoke = eventHandlerType.GetMethod(nameof(Action.Invoke));
-                ParameterInfo[] parameters = actionInvoke.GetParameters();
-                ParameterExpression[] parameterExpressions = parameters.Select(p => Expression.Parameter(p.ParameterType, p.Name)).ToArray();
+                ParameterExpression[] eventParameters = GetEventParameterExpressions(eventInfo);
 
                 Expression instanceExpression = Expression.Constant(unityEventData.UnityEvent);
-                Expression body = Expression.Call(instanceExpression, invokeUnityEventInfo);
+                var invokeUnityEventInfo = unityEventData.UnityEvent.GetType().GetMethod(nameof(UnityEvent.Invoke));
+                var unityEventArguments = invokeUnityEventInfo.GetParameters();
 
-                LambdaExpression lambda = Expression.Lambda(eventHandlerType, body, parameterExpressions);
+                Expression body = null;
+                int possibleParametersCount = Mathf.Min(2, eventParameters.Length);
+                if (unityEventArguments.Length > 0)
+                {
+                    for (int a = 0; a < possibleParametersCount; a++)
+                    {
+                        var argumentType = eventParameters[a].Type;
+                        if (eventDataTypesByArgumentType.ContainsKey(argumentType))
+                        {
+                            Expression passedParameter = eventParameters[a];
+                            body = Expression.Call(instanceExpression, invokeUnityEventInfo, passedParameter);
+                            break;
+                        }
+                    }
+                }
+
+                if (body == null)
+                {
+                    body = Expression.Call(instanceExpression, invokeUnityEventInfo);
+                }
+
+                LambdaExpression lambda = Expression.Lambda(eventInfo.EventHandlerType, body, eventParameters);
                 unityEventData.InvokeDelegate = lambda.Compile();
-
-                //var del = Delegate.CreateDelegate(typeof(Action), unityEventData.UnityEvent, invokeUnityEventInfo);
             }
+            TimeSpan duration = DateTime.Now - start;
+            Debug.Log(duration);
+        }
+
+        private static ParameterExpression[] GetEventParameterExpressions(EventInfo eventInfo)
+        {
+            Type eventHandlerType = eventInfo.EventHandlerType;
+            MethodInfo actionInvoke = eventHandlerType.GetMethod(nameof(Action.Invoke));
+            ParameterExpression[] eventParameters = actionInvoke.GetParameters().Select(p => Expression.Parameter(p.ParameterType, p.Name)).ToArray();
+            return eventParameters;
         }
 
         private void OnEnable()
@@ -213,7 +243,7 @@ namespace Bipolar
                 for (int i = 0; i < eventsDataProperty.arraySize; i++)
                 {
                     var eventProperty = eventsDataProperty.GetArrayElementAtIndex(i);
-                    var unityEventProperty = eventProperty?.FindPropertyRelative("unityEvent");
+                    var unityEventProperty = eventProperty?.FindPropertyRelative(nameof(EventData.unityEvent));
                     if (unityEventProperty != null)
                     {
                         var label = new GUIContent(ObjectNames.NicifyVariableName(GetEventDataName(eventProperty)));
@@ -265,33 +295,31 @@ namespace Bipolar
 
             private static Type GetEventDataType(Type eventHandlerType, Type componentType)
             {
-                Type eventDataType = typeof(EventData);
-                var methodInfo = eventHandlerType.GetMethod("Invoke");
+                var methodInfo = eventHandlerType.GetMethod(nameof(Action.Invoke));
                 var eventParameters = methodInfo.GetParameters();
-                
-                if (eventParameters != null && eventParameters.Length > 0)
+
+                int possibleParametersCount = Mathf.Min(2, eventParameters.Length);
+                for (int i = 0; i < possibleParametersCount; i++)
                 {
-                    int argumentIndex = eventParameters[0].ParameterType == componentType ? 1 : 0;
-                    if (argumentIndex < eventParameters.Length)
-                    {
-                        var argumentType = eventParameters[argumentIndex].ParameterType;
-                        eventDataType = ComponentEvents.GetEventDataType(argumentType);
-                    }
+                    var argumentType = eventParameters[i].ParameterType;
+                    var eventDataType = ComponentEvents.GetEventDataType(argumentType);
+                    if (eventDataType != null)
+                        return eventDataType;
                 }
 
-                return eventDataType;
+                return typeof(EventData);
             }
 
             public static int FindIndex(SerializedProperty arrayProperty, Predicate<SerializedProperty> predicate)
             {
-                if (arrayProperty == null)
-                    return -1;
-
-                for (int i = 0; i < arrayProperty.arraySize; i++)
+                if (arrayProperty != null)
                 {
-                    var element = arrayProperty.GetArrayElementAtIndex(i);
-                    if (predicate(element))
-                        return i;
+                    for (int i = 0; i < arrayProperty.arraySize; i++)
+                    {
+                        var element = arrayProperty.GetArrayElementAtIndex(i);
+                        if (predicate(element))
+                            return i;
+                    }
                 }
 
                 return -1;

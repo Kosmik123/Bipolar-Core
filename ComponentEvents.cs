@@ -6,6 +6,9 @@ using System.Reflection;
 using System.Linq.Expressions;
 using System.Linq;
 using UnityEngine.UIElements;
+using UnityEditor.Hardware;
+using UnityEditor.PackageManager;
+
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -18,8 +21,8 @@ namespace Bipolar
         private static readonly Dictionary<Type, Type> eventDataTypesByArgumentType = new Dictionary<Type, Type>
         {
             [typeof(int)] = typeof(EventDataInt),
-            //[typeof(float)] = typeof(FloatEvent),
-            //[typeof(string)] = typeof(StringEvent),
+            [typeof(float)] = typeof(EventDataFloat),
+            [typeof(string)] = typeof(EventDataString),
         };
 
         public static Type GetEventDataType(Type argumentType)
@@ -70,7 +73,24 @@ namespace Bipolar
             [SerializeField]
             internal UnityEvent<int> unityEvent;
             public override UnityEventBase UnityEvent => unityEvent;
+        }      
+        
+        [System.Serializable]
+        private class EventDataFloat : BaseEventData
+        {
+            [SerializeField]
+            internal UnityEvent<float> unityEvent;
+            public override UnityEventBase UnityEvent => unityEvent;
         }
+        
+        [System.Serializable]
+        private class EventDataString : BaseEventData
+        {
+            [SerializeField]
+            internal UnityEvent<string> unityEvent;
+            public override UnityEventBase UnityEvent => unityEvent;
+        }
+
 
         private void Awake()
         {
@@ -245,40 +265,22 @@ namespace Bipolar
 
             private static Type GetEventDataType(Type eventHandlerType, Type componentType)
             {
-                var genericTypeArguments = eventHandlerType.GenericTypeArguments;
                 Type eventDataType = typeof(EventData);
-                if (genericTypeArguments != null && genericTypeArguments.Length != 0)
+                var methodInfo = eventHandlerType.GetMethod("Invoke");
+                var eventParameters = methodInfo.GetParameters();
+                
+                if (eventParameters != null && eventParameters.Length > 0)
                 {
-                    int argumentIndex = genericTypeArguments[0] == componentType ? 1 : 0;
-                    if (argumentIndex < genericTypeArguments.Length)
+                    int argumentIndex = eventParameters[0].ParameterType == componentType ? 1 : 0;
+                    if (argumentIndex < eventParameters.Length)
                     {
-                        var argumentType = genericTypeArguments[argumentIndex];
+                        var argumentType = eventParameters[argumentIndex].ParameterType;
                         eventDataType = ComponentEvents.GetEventDataType(argumentType);
                     }
                 }
 
                 return eventDataType;
             }
-
-            //private static UnityEventBase CreateUnityEvent(EventInfo componentEvent, Type componentType)
-            //{
-            //    var eventHandlerType = componentEvent.EventHandlerType;
-            //    var genericTypeArguments = eventHandlerType.GenericTypeArguments;
-
-            //    Type eventDataType = typeof(IntEvent);
-            //    if (false && genericTypeArguments != null && genericTypeArguments.Length != 0)
-            //    {
-            //        int argumentIndex = genericTypeArguments[0] == componentType ? 1 : 0;
-            //        if (argumentIndex < genericTypeArguments.Length)
-            //        {
-            //            var argumentType = genericTypeArguments[argumentIndex];
-            //            eventDataType = GetEventDataType(argumentType);
-            //        }
-            //    }
-
-            //    var unityEventInstance = (UnityEventBase)Activator.CreateInstance(eventDataType);
-            //    return unityEventInstance;
-            //}
 
             public static int FindIndex(SerializedProperty arrayProperty, Predicate<SerializedProperty> predicate)
             {
@@ -295,7 +297,6 @@ namespace Bipolar
                 return -1;
             }
         }
-
 #endif
     }
 }

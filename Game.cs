@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Bipolar
 {
-	internal class Game : ScriptableObject
+    internal class Game : ScriptableObject
     {
         public void Quit()
         {

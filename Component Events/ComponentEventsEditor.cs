@@ -79,7 +79,7 @@ namespace Bipolar.Prototyping.ComponentEvents
             for (int i = 0; i < eventsDataProperty.arraySize; i++)
             {
                 var eventProperty = eventsDataProperty.GetArrayElementAtIndex(i);
-                var unityEventProperty = eventProperty?.FindPropertyRelative(nameof(EventData.unityEvent));
+                var unityEventProperty = eventProperty?.FindPropertyRelative(nameof(EventDataVoid.unityEvent));
                 if (unityEventProperty != null)
                 {
                     var label = new GUIContent(ObjectNames.NicifyVariableName(GetEventDataName(eventProperty)));
@@ -94,7 +94,7 @@ namespace Bipolar.Prototyping.ComponentEvents
         private static void CreateNewEventDataInProperty(SerializedProperty property, Type componentType, EventInfo componentEvent)
         {
             property.managedReferenceValue = CreateEventData(componentEvent, componentType);
-            property.FindPropertyRelative(nameof(EventData.eventName)).stringValue = componentEvent.Name;
+            property.FindPropertyRelative(nameof(EventDataVoid.eventName)).stringValue = componentEvent.Name;
         }
 
         private static bool CheckType(SerializedProperty eventDataProperty, Type correctEventType)
@@ -117,15 +117,15 @@ namespace Bipolar.Prototyping.ComponentEvents
 
         private static string GetEventDataName(SerializedProperty property)
         {
-            return property?.FindPropertyRelative(nameof(EventData.eventName))?.stringValue;
+            return property?.FindPropertyRelative(nameof(EventDataVoid.eventName))?.stringValue;
         }
 
-        private static EventDataBase CreateEventData(EventInfo componentEvent, Type componentType)
+        private static AbstractEventData CreateEventData(EventInfo componentEvent, Type componentType)
         {
             var eventHandlerType = componentEvent.EventHandlerType;
             Type eventDataType = GetEventDataType(eventHandlerType, componentType);
 
-            var unityEventInstance = (EventDataBase)Activator.CreateInstance(eventDataType);
+            var unityEventInstance = (AbstractEventData)Activator.CreateInstance(eventDataType);
             return unityEventInstance;
         }
 
@@ -143,7 +143,7 @@ namespace Bipolar.Prototyping.ComponentEvents
                     return eventDataType;
             }
 
-            return typeof(EventData);
+            return typeof(EventDataVoid);
         }
 
         public static int FindIndex(SerializedProperty arrayProperty, Predicate<SerializedProperty> predicate)

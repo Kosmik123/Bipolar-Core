@@ -9,6 +9,25 @@ namespace Bipolar
 		{
 			return collection[Random.Range(0, collection.Count)];
 		}
+
+		public static T GetRandom<T>(this IReadOnlyCollection<T> collection)
+		{
+			int randomIndex = Random.Range(0, collection.Count);
+			var elem = collection.GetEnumerator();
+			for (int i = 0; i < randomIndex; i++)
+				elem.MoveNext();
+
+			return elem.Current;
+		}
+
+		public static bool AddDistinct<T>(this List<T> list, T element)
+		{
+			if (list.Contains(element))
+				return false;
+
+			list.Add(element);
+			return true;
+		}
 	}
 
 	public static class ComponentExtensions

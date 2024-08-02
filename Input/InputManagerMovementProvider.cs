@@ -4,7 +4,7 @@ namespace Bipolar.Input
 {
     public abstract class MovementInputProvider : MonoBehaviour, IMoveInputProvider
     {
-        public abstract Vector2 GetMotion();
+        public abstract Vector2 GetMovement();
     }
 
     public class InputManagerMovementProvider : MovementInputProvider
@@ -24,7 +24,7 @@ namespace Bipolar.Input
         [SerializeField]
         private bool rawInput;
 
-        public override Vector2 GetMotion()
+        public override Vector2 GetMovement()
         {
             return new Vector2(GetAxis(horizontalAxis), GetAxis(verticalAxis));
         }

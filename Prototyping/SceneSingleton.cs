@@ -34,30 +34,22 @@ namespace Bipolar.Prototyping
             get
             {
                 if (instance == null)
-                    new GameObject(typeof(TSelf).Name).AddComponent<TSelf>();
+                    instance = new GameObject(typeof(TSelf).Name).AddComponent<TSelf>();
                 return instance;
-            }
-            set
-            {
-                instance = value;
             }
         }
 
 		protected virtual void Awake()
 		{
-			if (Instance == null)
-			{
-				Instance = (TSelf)this;
-			}
-			else if (Instance != this)
-			{
-				Destroy(this);
-			}
-		}
+            if (instance == null)
+                instance = (TSelf)this;
+            else if (instance != this)
+                Destroy(this);
+        }
 
 		protected virtual void OnDestroy()
 		{
-			Instance = null;
+			instance = null;
 		}
 	}
 }

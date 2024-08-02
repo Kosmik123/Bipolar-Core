@@ -30,7 +30,7 @@ namespace Bipolar.Prototyping.ComponentEvents
         internal Component component;
 
         [SerializeReference]
-        internal AbstractEventData[] eventsData;
+        internal BaseEventData[] eventsData;
 
         private void Awake()
         {

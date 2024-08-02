@@ -6,7 +6,7 @@ using UnityEngine.Events;
 namespace Bipolar.Prototyping.ComponentEvents
 {
     [System.Serializable]
-    internal abstract class AbstractEventData
+    internal abstract class BaseEventData
     {
         public string eventName;
         public abstract UnityEventBase UnityEvent { get; }
@@ -23,7 +23,7 @@ namespace Bipolar.Prototyping.ComponentEvents
     }
 
     [System.Serializable]
-    internal partial class EventDataVoid : AbstractEventData
+    internal partial class EventData : BaseEventData
     {
         [SerializeField]
         internal UnityEvent unityEvent;
@@ -31,7 +31,7 @@ namespace Bipolar.Prototyping.ComponentEvents
     }
 
     [System.Serializable]
-    internal partial class EventDataInt : AbstractEventData
+    internal partial class EventDataInt : BaseEventData
     {
         [SerializeField]
         internal UnityEvent<int> unityEvent;
@@ -39,7 +39,7 @@ namespace Bipolar.Prototyping.ComponentEvents
     }
 
     [System.Serializable]
-    internal partial class EventDataFloat : AbstractEventData
+    internal partial class EventDataFloat : BaseEventData
     {
         [SerializeField]
         internal UnityEvent<float> unityEvent;
@@ -47,7 +47,7 @@ namespace Bipolar.Prototyping.ComponentEvents
     }
 
     [System.Serializable]
-    internal partial class EventDataString : AbstractEventData
+    internal partial class EventDataString : BaseEventData
     {
         [SerializeField]
         internal UnityEvent<string> unityEvent;
@@ -55,7 +55,7 @@ namespace Bipolar.Prototyping.ComponentEvents
     }
 
     [System.Serializable]
-    internal partial class EventDataBool : AbstractEventData
+    internal partial class EventDataBool : BaseEventData
     {
         [SerializeField]
         internal UnityEvent<bool> unityEvent;
@@ -71,7 +71,6 @@ namespace Bipolar.Prototyping.ComponentEvents
         {
             Debug.Log("Preprocess build");
             //PlayerSettings.SetAdditionalIl2CppArgs("--compilation-defines=HEJKA_MISKU");
-            PlayerSettings.SetAdditionalIl2CppArgs("--compiler-flags=\"--compilation-defines=HEJKA_MISKU\"");
         }
     }
 #endif

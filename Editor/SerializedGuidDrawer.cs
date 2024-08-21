@@ -11,28 +11,28 @@ namespace Bipolar.Editor
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            var a = property.FindPropertyRelative("a");
-            var b = property.FindPropertyRelative("b");
-            var c = property.FindPropertyRelative("c");
-            var d = property.FindPropertyRelative("d");
-            var e = property.FindPropertyRelative("e");
-            var f = property.FindPropertyRelative("f");
-            var g = property.FindPropertyRelative("g");
-            var h = property.FindPropertyRelative("h");
-            var i = property.FindPropertyRelative("i");
-            var j = property.FindPropertyRelative("j");
-            var k = property.FindPropertyRelative("k");
-            var backingGuid = new Guid(a.intValue,
-                (short)b.intValue,
-                (short)c.intValue,
-                (byte)d.intValue, 
-                (byte)e.intValue, 
-                (byte)f.intValue, 
-                (byte)g.intValue, 
-                (byte)h.intValue, 
-                (byte)i.intValue, 
-                (byte)j.intValue, 
-                (byte)k.intValue);
+            var aProperty = property.FindPropertyRelative("a");
+            var bProperty = property.FindPropertyRelative("b");
+            var cProperty = property.FindPropertyRelative("c");
+            var dProperty = property.FindPropertyRelative("d");
+            var eProperty = property.FindPropertyRelative("e");
+            var fProperty = property.FindPropertyRelative("f");
+            var gProperty = property.FindPropertyRelative("g");
+            var hProperty = property.FindPropertyRelative("h");
+            var iProperty = property.FindPropertyRelative("i");
+            var jProperty = property.FindPropertyRelative("j");
+            var kProperty = property.FindPropertyRelative("k");
+            var backingGuid = new Guid(aProperty.intValue,
+                (short)bProperty.intValue,
+                (short)cProperty.intValue,
+                (byte)dProperty.intValue, 
+                (byte)eProperty.intValue, 
+                (byte)fProperty.intValue, 
+                (byte)gProperty.intValue, 
+                (byte)hProperty.intValue, 
+                (byte)iProperty.intValue, 
+                (byte)jProperty.intValue, 
+                (byte)kProperty.intValue);
 
             var buttonRect = position;
             bool isSmall = position.width - EditorGUIUtility.labelWidth < 2 * buttonWidth;
@@ -60,18 +60,21 @@ namespace Bipolar.Editor
             {
                 property.serializedObject.Update();
                 var newGuid = Guid.NewGuid();
-                var bytes = newGuid.ToByteArray();
-                a.intValue = BitConverter.ToInt32(bytes, 0);
-                b.intValue = BitConverter.ToInt16(bytes, 4);
-                c.intValue = BitConverter.ToInt16(bytes, 6);
-                d.intValue = bytes[8];
-                e.intValue = bytes[9];
-                f.intValue = bytes[10];
-                g.intValue = bytes[11];
-                h.intValue = bytes[12];
-                i.intValue = bytes[13];
-                j.intValue = bytes[14];
-                k.intValue = bytes[15];
+                newGuid.GetBackingValues(out var a, out var b, out var c, out var d, out var e,
+                    out var f, out var g, out var h, out var i, out var j, out var k);
+
+                aProperty.intValue = a;
+                bProperty.intValue = b;
+                cProperty.intValue = c;
+                dProperty.intValue = d;
+                eProperty.intValue = e;
+                fProperty.intValue = f;
+                gProperty.intValue = g;
+                hProperty.intValue = h;
+                iProperty.intValue = i;
+                jProperty.intValue = j;
+                kProperty.intValue = k;
+
                 property.serializedObject.ApplyModifiedProperties();
             }
         }

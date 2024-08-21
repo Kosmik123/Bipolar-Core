@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Bipolar
+namespace Bipolar.Prototyping
 {
     public class Oscilator : MonoBehaviour
     {
@@ -24,23 +24,40 @@ namespace Bipolar
         private Vector3 phase;
         private Vector3 Phase { get => phase; set => phase = value; }
 
+        private float time;
+
         private void Update()
         {
-            float time = Time.time;
-            transform.position = CalucalatePosition(time);
+            time += Time.deltaTime;
+            transform.localPosition = CalculatePosition(time);
         }
 
-        private Vector3 CalucalatePosition(float time) => CalculatePosition(Amplitude, Offset, Frequency, Phase, time);
+        private Vector3 CalculatePosition(float time) => CalculatePosition(Amplitude, Offset, Frequency, Phase, time);
 
-        public static Vector3 CalculatePosition(Vector3 Amplitude, Vector3 Offset, Vector3 Frequency, Vector3 Phase, float time)
+        public static Vector3 CalculatePosition(Vector3 amplitude, Vector3 offset, Vector3 frequency, Vector3 phase, float time)
         {
             var position = new Vector3(
-                Mathf.Sin(Frequency.x * Mathf.PI * (time + Phase.x)),
-                Mathf.Sin(Frequency.y * Mathf.PI * (time + Phase.y)),
-                Mathf.Sin(Frequency.z * Mathf.PI * (time + Phase.z)));
-            position.Scale(Amplitude);
-            position += Offset;
+                Mathf.Sin(frequency.x * Mathf.PI * time + phase.x),
+                Mathf.Sin(frequency.y * Mathf.PI * time + phase.y),
+                Mathf.Sin(frequency.z * Mathf.PI * time + phase.z));
+
+            position.Scale(amplitude);
+            position += offset;
             return position;
+        }
+
+        private void OnDrawGizmosSelected()
+        {
+#if UNITY_EDITOR
+            var matrix = Gizmos.matrix;
+            if (transform.parent)
+				Gizmos.matrix = transform.parent.localToWorldMatrix;
+
+            Gizmos.color = Color.yellow;
+            float time = Application.isPlaying ? Time.time : (float)UnityEditor.EditorApplication.timeSinceStartup;
+			Gizmos.DrawSphere(CalculatePosition(time), 0.1f);
+            Gizmos.matrix = matrix;
+#endif
         }
     }
 
@@ -52,6 +69,7 @@ namespace Bipolar
 
         public void OnSceneGUI()
         {
+            var transform = ((Component)target).transform;
             var frequencies = serializedObject.FindProperty("frequency").vector3Value;
 
             float frequency = Gcd3(frequencies.x, frequencies.y, frequencies.z);
@@ -62,16 +80,20 @@ namespace Bipolar
             var amplitude = serializedObject.FindProperty("amplitude").vector3Value;
             var offset = serializedObject.FindProperty("offset").vector3Value;
             var phase = serializedObject.FindProperty("phase").vector3Value;
-            
+
             UnityEditor.Handles.color = Color.yellow;
-            var previousPosition = Oscilator.CalculatePosition(amplitude, offset, frequencies, phase, 0);
+            var matrix = UnityEditor.Handles.matrix;
+			if (transform.parent)
+				UnityEditor.Handles.matrix = transform.parent.localToWorldMatrix;
+			var previousPosition = Oscilator.CalculatePosition(amplitude, offset, frequencies, phase, 0);
             for (int i = 1; i <= resolution; i++)
             {
-                var position = Oscilator.CalculatePosition(amplitude, offset, frequencies, phase, i * dt);
-                UnityEditor.Handles.DrawLine(previousPosition, position);
-                previousPosition = position;
+                var localPosition = Oscilator.CalculatePosition(amplitude, offset, frequencies, phase, i * dt);
+                UnityEditor.Handles.DrawLine(previousPosition, localPosition);
+                previousPosition = localPosition;
             }
-        }
+            UnityEditor.Handles.matrix = matrix;
+		}
 
         private static float Gcd(float a, float b, float maxError)
         {

@@ -4,6 +4,6 @@ namespace Bipolar.Input
 {
     public interface IMoveInputProvider
     {
-        Vector2 GetMotion();
+        Vector2 GetMovement();
     }
 }

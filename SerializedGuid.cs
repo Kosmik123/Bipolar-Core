@@ -29,10 +29,29 @@ namespace Bipolar
     
         private SerializedGuid(Guid input)
         {
-            var bytes = input.ToByteArray();
+            input.GetBackingValues(out a, out b, out c, out d, out e, out f, out g, out h, out i, out j, out k);
+        }
+    }
+
+
+    public static class GuidExtension
+    {
+        public static void GetBackingValues(this Guid guid, out int a, out short b, out short c, out byte d,
+            out byte e, out byte f, out byte g, out byte h, out byte i, out byte j, out byte k)
+        {
+#if UNITY_2022_2_OR_NEWER
+            Span<byte> guidBytes = stackalloc byte[16];
+            guid.TryWriteBytes(guidBytes);
+            ReadOnlySpan<byte> bytes = guidBytes;
+            a = BitConverter.ToInt32(bytes);
+            b = BitConverter.ToInt16(bytes[4..]);
+            c = BitConverter.ToInt16(bytes[6..]);
+#else
+            var bytes = guid.ToByteArray();
             a = BitConverter.ToInt32(bytes, 0);
             b = BitConverter.ToInt16(bytes, 4);
             c = BitConverter.ToInt16(bytes, 6);
+#endif
             d = bytes[8];
             e = bytes[9];
             f = bytes[10];
@@ -44,3 +63,4 @@ namespace Bipolar
         }
     }
 }
+

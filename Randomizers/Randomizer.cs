@@ -4,14 +4,14 @@ namespace Bipolar
 {
     public abstract class Randomizer<T> : MonoBehaviour where T : Component
     {
-        private T randomizedComponent;
+        private T _randomizedComponent;
         public T RandomizedComponent
         {
             get
             {
-                if (randomizedComponent == null)
-                    randomizedComponent = GetComponent<T>();
-                return randomizedComponent;
+                if (_randomizedComponent == null)
+                    _randomizedComponent = GetComponent<T>();
+                return _randomizedComponent;
             }
         }
 

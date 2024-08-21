@@ -3,7 +3,7 @@
 namespace Bipolar
 {
     [System.Serializable]
-    public class SerializedInterface<TInterface>
+    public class Serialized<TInterface>
         where TInterface : class
     {
         [SerializeField]
@@ -12,25 +12,23 @@ namespace Bipolar
         private TInterface _value;
         public TInterface Value
         {
-            get 
+            get
             {
                 _value ??= serializedObject as TInterface;
-                return _value; 
+                return _value;
             }
             set
             {
                 if (!(value is Object @object))
                     throw new System.InvalidCastException();
-                else
-                {
-                    serializedObject = @object;
-                    _value = value;
-                }
+
+                serializedObject = @object;
+                _value = value;
             }
         }
 
-        internal System.Type Type => typeof(TInterface);
+        public System.Type Type => typeof(TInterface);
 
-        public static implicit operator TInterface (SerializedInterface<TInterface> iface) => iface.Value;
+        public static implicit operator TInterface(Serialized<TInterface> iface) => iface.Value;
     }
 }

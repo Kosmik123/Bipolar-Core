@@ -44,6 +44,7 @@ namespace Bipolar
         }
     }
 
+#if UNITY_EDITOR
     [UnityEditor.CustomEditor(typeof(Oscilator))]
     public class OscillatorEditor : UnityEditor.Editor
     {
@@ -88,5 +89,5 @@ namespace Bipolar
             return Gcd(c, Gcd(b, a, maxError), maxError);
         }
     }
-
+#endif
 }

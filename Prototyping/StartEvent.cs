@@ -18,5 +18,4 @@ namespace Bipolar.Prototyping
     {
         private void Start() => InvokeEvent();
     }
-
 }

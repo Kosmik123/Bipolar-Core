@@ -3,7 +3,8 @@ using UnityEngine.Events;
 
 namespace Bipolar
 {
-    public class TimerBehavior : MonoBehaviour, ITimer
+    [AddComponentMenu(AddComponentMenuPath.Root + "Timer")]
+    public class TimerComponent : MonoBehaviour, ITimer
     {
         public System.Action OnElapsed { get; set; }
 
@@ -54,8 +55,8 @@ namespace Bipolar
             }
         }
 
-        [SerializeField]
         private UnityEvent onElapsed;
+        [SerializeField]
 
 		public void Start()
 		{
@@ -77,8 +78,8 @@ namespace Bipolar
             if (autoReset == false)
                 enabled = false;
 
-            OnElapsed?.Invoke();
             onElapsed.Invoke();
+            OnElapsed?.Invoke();
         }
     }
 }

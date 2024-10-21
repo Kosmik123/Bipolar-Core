@@ -21,8 +21,6 @@ namespace Bipolar.Editor
             }
         }
 
-        private System.Action<Object> OnClosed;
-
         #region Constants
         private const string noneObjectName = "None";
         private const string searchBoxName = "searchBox";
@@ -61,6 +59,7 @@ namespace Bipolar.Editor
         private Object selectedObject;
         private string searchFilter = "";
         private Component[] componentsOfInterface;
+        private System.Action<Object> OnClosed;
 
         public static void Show(System.Type interfaceType, Object selectedObject, System.Action<Object> onClosed = null)
         {
@@ -173,10 +172,14 @@ namespace Bipolar.Editor
             sceneObjectsViewScrollAmount = EditorGUILayout.BeginScrollView(new Vector2(0, sceneObjectsViewScrollAmount)).y;
             EditorGUIUtility.SetIconSize(new Vector2(16, 16));
             var pressedObject = selectedObject;
+			//var listOfItems = new List<(GUIContent label, Object @object)>();
+			//listOfItems.Add((new GUIContent(noneObjectName, null, null), null));
+
+
+
             if (DrawSceneObjectListItem(null))
-            {
                 pressedObject = null;
-            }
+            
             foreach (var component in componentsOfInterface)
             {
                 if (component.name.ToLower().Contains(searchFilter.ToLower()))
@@ -211,6 +214,7 @@ namespace Bipolar.Editor
             var style = asset == selectedObject ? SelectedStyle : EditorStyles.label;
             if (GUILayout.Button(new GUIContent(name, image), style))
                 wasPressed = true;
+
             GUILayout.EndHorizontal();
             return wasPressed;
         }
@@ -231,6 +235,7 @@ namespace Bipolar.Editor
             GUILayout.Space(20);
             if (GUILayout.Button(objectContent, style))
                 wasPressed = true;
+
             GUILayout.EndHorizontal();
             return wasPressed;
         }

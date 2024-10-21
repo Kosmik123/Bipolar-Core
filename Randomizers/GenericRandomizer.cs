@@ -2,7 +2,7 @@
 
 namespace Bipolar
 {
-    public abstract class Randomizer<T> : MonoBehaviour where T : Component
+    public abstract class GenericRandomizer<T> : MonoBehaviour where T : Component
     {
         private T _randomizedComponent;
         public T RandomizedComponent

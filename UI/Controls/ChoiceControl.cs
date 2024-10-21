@@ -10,14 +10,14 @@ namespace Bipolar.UI
 
 		[Space]
         [SerializeField]
-		protected UIButton leftButton;
+		protected Button leftButton;
 		[SerializeField]
-		protected UIButton rightButton;
+		protected Button rightButton;
 
         [Space]
         [SerializeField]
 		protected ChoiceOptionsController optionsController;
-        public int OptionsCount => optionsController.OptionCount;
+        public int OptionsCount => optionsController ? optionsController.OptionCount : 0;
 
 		protected virtual void OnEnable()
 		{
@@ -33,9 +33,9 @@ namespace Bipolar.UI
 			choiceLabel.SetText(text);
 		}
 
-		protected void SwitchLeft(UIButton b) => Switch(-1);
+		public void SwitchLeft(Button b) => Switch(-1);
 
-		protected void SwitchRight(UIButton b) => Switch(+1);
+		public void SwitchRight(Button b) => Switch(+1);
 
         protected virtual void Switch(int dir)
         {

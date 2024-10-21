@@ -1,14 +1,14 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Bipolar.UI
 {
+    [AddComponentMenu(AddComponentMenuPath.UI + "Window")]
 	public class Window : MonoBehaviour
     {
         public event System.Action<Window> OnClosed;
 
         [SerializeField]
-        private UIButton closeButton;
+        private Button closeButton;
 
         private void OnEnable()
         {
@@ -16,7 +16,7 @@ namespace Bipolar.UI
                 closeButton.OnClicked += Close; 
         }
 
-        private void Close(UIButton button)
+        private void Close(Button button)
         {
             gameObject.SetActive(false);
         }

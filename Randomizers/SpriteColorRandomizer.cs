@@ -3,7 +3,7 @@
 namespace Bipolar
 {
     [RequireComponent(typeof(SpriteRenderer))]
-    public class SpriteColorRandomizer : Randomizer<SpriteRenderer>
+    public class SpriteColorRandomizer : GenericRandomizer<SpriteRenderer>
     {
         [SerializeField]
         private Color[] colors;

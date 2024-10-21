@@ -4,10 +4,11 @@ using UnityEngine.EventSystems;
 
 namespace Bipolar.UI
 {
-	public class UIButton : UnityEngine.UI.Button
+    [AddComponentMenu(AddComponentMenuPath.UI + "Button")]
+	public class Button : UnityEngine.UI.Button
     {
-        public event System.Action<UIButton> OnClicked;
-        public event System.Action<UIButton, bool> OnHighlightChanged;
+        public event System.Action<Button> OnClicked;
+        public event System.Action<Button, bool> OnHighlightChanged;
 
         [SerializeField]
         private TMP_Text label;

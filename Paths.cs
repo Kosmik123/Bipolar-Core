@@ -10,5 +10,6 @@
     {
         public const string Root = "Bipolar/";
         public const string Input = Root + "Input/";
+        public const string UI = Root + "UI/";
     }
 }

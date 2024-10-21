@@ -3,7 +3,7 @@
 namespace Bipolar
 {
     [RequireComponent(typeof(Renderer))]
-    public class MaterialRandomizer : Randomizer<MeshRenderer>
+    public class MaterialRandomizer : GenericRandomizer<MeshRenderer>
     {
         [System.Serializable]
         public class RandomMaterialData

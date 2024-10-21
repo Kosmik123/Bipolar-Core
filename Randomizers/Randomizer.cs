@@ -25,7 +25,13 @@ namespace Bipolar
 
         public abstract void Randomize();
 
-        private void Awake()
+		protected virtual void Reset()
+		{
+            if (TryGetComponent<T>(out _) == false)
+                gameObject.AddComponent<T>();
+		}
+
+		private void Awake()
         {
             if (randomizeOnAwake)
                 Randomize();

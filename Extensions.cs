@@ -5,10 +5,7 @@ namespace Bipolar
 {
 	public static class CollectionExtensions
 	{
-		public static T GetRandom<T>(this IReadOnlyList<T> collection)
-		{
-			return collection[Random.Range(0, collection.Count)];
-		}
+		public static T GetRandom<T>(this IReadOnlyList<T> collection) => collection[Random.Range(0, collection.Count)];
 
 		public static T GetRandom<T>(this IReadOnlyCollection<T> collection)
 		{
@@ -20,7 +17,7 @@ namespace Bipolar
 			return elem.Current;
 		}
 
-		public static bool AddDistinct<T>(this List<T> list, T element)
+		public static bool AddDistinct<T>(this IList<T> list, T element)
 		{
 			if (list.Contains(element))
 				return false;
@@ -42,10 +39,7 @@ namespace Bipolar
 
 	public static class TransformExtensions
 	{
-		public static void LookHorizontallyAt(this Transform transform, Transform target)
-		{
-			LookHorizontallyAt(transform, target.position);
-		}
+		public static void LookHorizontallyAt(this Transform transform, Transform target) => LookHorizontallyAt(transform, target.position);
 
 		public static void LookHorizontallyAt(this Transform transform, Vector3 target)
 		{

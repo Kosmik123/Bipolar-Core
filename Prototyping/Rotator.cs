@@ -28,13 +28,12 @@ namespace Bipolar.Prototyping
 	{
 		private Matrix4x4 previousMatrix;
 
+		public GizmosSpace(Transform transform) : this(transform.localToWorldMatrix) { }
 		public GizmosSpace(Matrix4x4 matrix)
 		{
 			previousMatrix = Gizmos.matrix;
 			Gizmos.matrix = matrix;
 		}
-
-		public GizmosSpace(Transform transform) : this(transform.localToWorldMatrix) { }
 
 		public void Dispose()
 		{

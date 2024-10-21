@@ -2,6 +2,6 @@
 
 namespace Bipolar.Pooling
 {
-    public class GameObjectPool : PoolBase<GameObject>
+    public class GameObjectPool : ObjectPool<GameObject>
     { }
 }

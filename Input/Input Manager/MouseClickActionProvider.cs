@@ -1,9 +1,10 @@
 ﻿using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Bipolar.Input
+namespace Bipolar.Input.InputManager
 {
-    public class InputManagerClickActionProvider : MonoBehaviour, IActionInputProvider
+	[AddComponentMenu(AddComponentMenuPath.Input + "Input Manager Mouse Click Input Provider")]
+	public class MouseClickActionProvider : MonoBehaviour, IActionInputProvider
     {
         public event System.Action OnPerformed;
 

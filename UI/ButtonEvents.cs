@@ -3,11 +3,11 @@ using UnityEngine.Events;
 
 namespace Bipolar.UI
 {
-	[RequireComponent(typeof(UIButton))]
-	public class UIButtonEvents : MonoBehaviour
+	[RequireComponent(typeof(Button))]
+	public class ButtonEvents : MonoBehaviour
     {
-        private UIButton _button;
-        public UIButton Button => this.GetRequired(ref _button);
+        private Button _button;
+        public Button Button => this.GetRequired(ref _button);
 
         [SerializeField]
         private UnityEvent onHover;
@@ -19,7 +19,7 @@ namespace Bipolar.UI
 			Button.OnHighlightChanged += Button_OnHighlightChanged;
 		}
 
-		private void Button_OnHighlightChanged(UIButton button, bool highlighted)
+		private void Button_OnHighlightChanged(Button button, bool highlighted)
 		{
             var @event = highlighted ? onHover : onUnhover;
             @event.Invoke();

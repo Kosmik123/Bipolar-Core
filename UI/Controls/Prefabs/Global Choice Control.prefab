@@ -5,6 +5,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1711655456560795772, guid: b9cc29cca2fe54948b59e32698fa88fe, type: 3}
@@ -155,11 +156,21 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6977659725427272220, guid: b9cc29cca2fe54948b59e32698fa88fe, type: 3}
+      propertyPath: m_TargetGraphic
+      value: 
+      objectReference: {fileID: 5046762485254605944}
     - target: {fileID: 7546209506891536593, guid: b9cc29cca2fe54948b59e32698fa88fe, type: 3}
       propertyPath: m_Name
       value: Global Choice Control
       objectReference: {fileID: 0}
     m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7546209506891536593, guid: b9cc29cca2fe54948b59e32698fa88fe, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6204063935627632530}
   m_SourcePrefab: {fileID: 100100000, guid: b9cc29cca2fe54948b59e32698fa88fe, type: 3}
 --- !u!1 &1880944441433509392 stripped
 GameObject:
@@ -179,8 +190,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   index: 0
-  action:
+  onOptionChange:
     m_PersistentCalls:
       m_Calls: []
   options: {fileID: 0}
   isLooped: 0
+--- !u!114 &5046762485254605944 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3794919499053898425, guid: b9cc29cca2fe54948b59e32698fa88fe, type: 3}
+  m_PrefabInstance: {fileID: 8260710644321474241}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

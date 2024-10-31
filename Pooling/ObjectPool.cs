@@ -1,15 +1,20 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace Bipolar.Pooling
 {
-	public interface IObjectPool<T>
+	public interface IObjectPool
+	{
+		int Count { get; }
+		Object Get();
+		void Release(Object @object);
+	}
+
+	public interface IObjectPool<T> : IObjectPool
 		where T : Object
 	{
-		public int Count { get; }
-		public T Get();
-		public void Release(T @object);
+		new T Get();
+		void Release(T @object);
 	}
 
 	public class ObjectPool : ObjectPool<Object>
@@ -30,7 +35,7 @@ namespace Bipolar.Pooling
 
 		public int Count => pool.Count;
 
-		public T Get()  => TryGetFromPool(out var @object) ? @object : Instantiate(prototype);
+		public T Get() => TryGetFromPool(out var @object) ? @object : Instantiate(prototype);
 
 		private bool TryGetFromPool(out T @object)
 		{
@@ -45,5 +50,8 @@ namespace Bipolar.Pooling
 		{
 			pool.Push(pooledObject);
 		}
-	}
+
+		public void Release(Object @object) => Release(@object);
+        Object IObjectPool.Get() => Get();
+    }
 }

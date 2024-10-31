@@ -2,7 +2,7 @@
 
 namespace Bipolar
 {
-    public abstract class Randomizer<T> : MonoBehaviour where T : Component
+    public abstract class GenericRandomizer<T> : MonoBehaviour where T : Component
     {
         private T _randomizedComponent;
         public T RandomizedComponent
@@ -25,7 +25,13 @@ namespace Bipolar
 
         public abstract void Randomize();
 
-        private void Awake()
+		protected virtual void Reset()
+		{
+            if (TryGetComponent<T>(out _) == false)
+                gameObject.AddComponent<T>();
+		}
+
+		private void Awake()
         {
             if (randomizeOnAwake)
                 Randomize();

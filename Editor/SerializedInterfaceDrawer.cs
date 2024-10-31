@@ -1,9 +1,10 @@
-﻿using UnityEditor;
+﻿using System.Runtime.InteropServices;
+using UnityEditor;
 using UnityEngine;
 
 namespace Bipolar.Editor
 {
-    [CustomPropertyDrawer(typeof(Serialized<>))]
+    [CustomPropertyDrawer(typeof(Serialized<>), true)]
     public class SerializedInterfaceDrawer : PropertyDrawer
     {
         private const string errorMessage = "Provided type is not an interface";
@@ -19,12 +20,28 @@ namespace Bipolar.Editor
 
             var serializedObjectProperty = property.FindPropertyRelative(serializedObjectPropertyName);
 
-            var requiredType = fieldInfo.FieldType.GetGenericArguments()[0];
-            serializedObjectProperty.objectReferenceValue = EditorGUI.ObjectField(objectFieldRect, label, serializedObjectProperty.objectReferenceValue, requiredType, true);
-            if (GUI.Button(interfaceButtonRect, "I"))
+            var requiredType = default(System.Type);  
+            for (var type = fieldInfo.FieldType; type != null; type = type.BaseType)
             {
-                Object objectReferenceValue = serializedObjectProperty.objectReferenceValue;
-                InterfaceSelectorWindow.Show(requiredType, objectReferenceValue, (obj) => AssignValue(serializedObjectProperty, obj));
+                if (type.IsGenericType == false)
+                    continue;
+
+                requiredType = type.GetGenericArguments()[0];
+                break;
+            }
+
+            if (requiredType != default)
+            {
+                serializedObjectProperty.objectReferenceValue = EditorGUI.ObjectField(objectFieldRect, label, serializedObjectProperty.objectReferenceValue, requiredType, true);
+                if (GUI.Button(interfaceButtonRect, "I"))
+                {
+                    Object objectReferenceValue = serializedObjectProperty.objectReferenceValue;
+                    InterfaceSelectorWindow.Show(requiredType, objectReferenceValue, (obj) => AssignValue(serializedObjectProperty, obj));
+                }
+            }
+            else
+            {
+
             }
 
             EditorGUI.EndProperty();

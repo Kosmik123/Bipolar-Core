@@ -4,7 +4,7 @@ namespace Bipolar.UI
 {
 	public class LocalChoiceOptionsController : ChoiceOptionsController
 	{
-		[SerializeField]
+		[Space, SerializeField]
 		private string[] options;
 		[SerializeField]
 		private bool isLooped;

@@ -43,8 +43,4 @@ namespace Bipolar.UI
             Label.UnregisterDirtyVerticesCallback(DetectTextChange);
         }
     }
-
-    public static class LabelExtensions
-    {
-    }
 }

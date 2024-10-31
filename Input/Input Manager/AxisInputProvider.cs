@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
 
-namespace Bipolar.Input
+namespace Bipolar.Input.InputManager
 {
-    public class InputManagerAxisInputProvider : MonoBehaviour, IAxisInputProvider
+	[AddComponentMenu(AddComponentMenuPath.Input + "Input Manager Axis Input Provider")]
+    public class AxisInputProvider : MonoBehaviour, IAxisInputProvider
     {
 #if NAUGHTY_ATTRIBUTES
         [NaughtyAttributes.InputAxis]

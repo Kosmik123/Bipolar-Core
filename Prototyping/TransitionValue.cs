@@ -7,13 +7,13 @@ namespace Bipolar.Prototyping
     public class TransitionValue : MonoBehaviour
     {
         [SerializeField]
-        private float transitionDuration;
+        private float transitionDuration = 1;
         [SerializeField]
         private UnityEvent<float> transitionedValue;
         [SerializeField]
         private AnimationCurve transitionCurve;
         [SerializeField]
-        private float valueMultiplier;
+        private float valueMultiplier = 1;
 
         [SerializeField]
         private bool transitionOnStart;

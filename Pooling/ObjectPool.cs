@@ -6,21 +6,20 @@ namespace Bipolar.Pooling
 	public interface IObjectPool
 	{
 		int Count { get; }
-		Object Get();
-		void Release(Object @object);
+		object Get();
+		void Release(object @object);
 	}
 
 	public interface IObjectPool<T> : IObjectPool
-		where T : Object
 	{
 		new T Get();
 		void Release(T @object);
 	}
 
-	public class ObjectPool : ObjectPool<Object>
+	public class UnityObjectPool : UnityObjectPool<Object>
 	{ }
 
-	public abstract class ObjectPool<T> : MonoBehaviour, IObjectPool<T>
+	public abstract class UnityObjectPool<T> : MonoBehaviour, IObjectPool<T>
 		where T : Object
 	{
 		[SerializeField]
@@ -41,7 +40,7 @@ namespace Bipolar.Pooling
 		{
 			@object = null;
 			while (@object == null && pool.Count > 0)
-				@object = pool.Pop(); 
+				@object = pool.Pop();
 
 			return @object != null;
 		}
@@ -51,7 +50,8 @@ namespace Bipolar.Pooling
 			pool.Push(pooledObject);
 		}
 
-		public void Release(Object @object) => Release(@object);
-        Object IObjectPool.Get() => Get();
-    }
+		object IObjectPool.Get() => Get();
+		public void Release(object @object) => Release((T)@object);
+		public void Release(Object @object) => Release((T)@object);
+	}
 }

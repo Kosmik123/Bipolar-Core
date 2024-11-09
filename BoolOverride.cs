@@ -1,8 +1,9 @@
-﻿using UnityEngine;
+﻿using Mono.Cecil;
+using UnityEngine;
 
 namespace Bipolar
 {
-	public enum BoolOverride
+    public enum BoolOverride
 	{
 		[InspectorName("Don't Override")]
 		DontOverride = 0,

@@ -1,10 +1,10 @@
-﻿using System.Runtime.InteropServices;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 namespace Bipolar.Editor
 {
     [CustomPropertyDrawer(typeof(Serialized<>), true)]
+    [CustomPropertyDrawer(typeof(Serialized<,>), true)]
     public class SerializedInterfaceDrawer : PropertyDrawer
     {
         private const string errorMessage = "Provided type is not an interface";

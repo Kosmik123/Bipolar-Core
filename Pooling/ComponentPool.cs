@@ -2,6 +2,6 @@
 
 namespace Bipolar.Pooling
 {
-    public class ComponentPool<T> : UnityObjectPool<T> where T : Component
+    public class ComponentPool<T> : ObjectPool<T> where T : Component
     { }
 }

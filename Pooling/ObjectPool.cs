@@ -56,25 +56,4 @@ namespace Bipolar.Pooling
         public void Release(Object @object) => Release(@object);
         Object IObjectPool.Get() => Get();
     }
-
-    public class ObjectsPool<T> where T : class, new()
-    {
-        private static readonly Stack<T> pool = new Stack<T>();
-
-        public int Count => pool.Count;
-
-        public static T Get()
-        {
-            if (pool.Count > 0)
-                return pool.Pop();
-
-            var pooledObject = new T();
-            return pooledObject;
-        }
-
-        public static void Release(T pooledObject)
-        {
-            pool.Push(pooledObject);
-        }
-    }
 }

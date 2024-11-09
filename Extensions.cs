@@ -14,7 +14,8 @@ namespace Bipolar
 			for (int i = 0; i < randomIndex; i++)
 				elem.MoveNext();
 
-			return elem.Current;
+            elem.MoveNext();
+            return elem.Current;
 		}
 
 		public static bool AddDistinct<T>(this IList<T> list, T element)

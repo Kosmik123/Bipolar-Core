@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Bipolar.Prototyping.ComponentEvents
 {
     [CustomEditor(typeof(ComponentEvents))]
-    public class ComponentEventsEditor : Editor
+    public class ComponentEventsEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {

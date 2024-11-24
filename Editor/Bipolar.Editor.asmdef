@@ -1,6 +1,6 @@
 {
     "name": "Bipolar.Editor",
-    "rootNamespace": "",
+    "rootNamespace": "Bipolar.Editor",
     "references": [
         "GUID:2ecd41d6ad0cd0748ab7fbaa1a919610",
         "GUID:f88fb04354076c646a4107a491394033",

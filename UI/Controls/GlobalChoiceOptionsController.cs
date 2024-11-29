@@ -9,7 +9,9 @@ namespace Bipolar.UI
 		[SerializeField]
 		private BoolOverride isLooped;
 
-		public override bool IsLooped => isLooped.TryOverride(options.IsLooped);
+		public override bool IsLooped => isLooped.TryOverride(CheckLooped);
+
+		private bool CheckLooped() => options.IsLooped;
 
 		public override int OptionCount => options.Count;
 

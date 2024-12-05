@@ -1,5 +1,6 @@
 ﻿#define VOLUME
 
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -28,20 +29,27 @@ namespace Bipolar.Subcomponents.Editor
 
 				int count = compoundBehavior.SubcomponentsCount;
 
+				EditorGUI.BeginChangeCheck();
 				for (int i = 0; i < count; i++)
 				{
+					EditorUtility.DrawSplitter();
 					var subcomponent = compoundBehavior.Subcomponents[i];
 					var itemProperty = componentsListProperty.GetArrayElementAtIndex(i);
 					DrawSubcomponent(itemProperty, subcomponent);
 				}
+				changed |= EditorGUI.EndChangeCheck();
 
-				GUILayout.Space(10);
+
+				EditorUtility.DrawSplitter();
+				GUILayout.Space(6);
+
 				if (count >= 0 && GUILayout.Button($"Add Component ({count})", EditorStyles.miniButton))
 				{
 					componentsListProperty.InsertArrayElementAtIndex(count);
 					var createdItemProperty = componentsListProperty.GetArrayElementAtIndex(count);
 					changed = true;
 				}
+				GUILayout.Space(6);
 
 				if (changed)
 					serializedObject.ApplyModifiedProperties();
@@ -137,17 +145,15 @@ namespace Bipolar.Subcomponents.Editor
 
 #else
 			var headerRect = EditorGUILayout.GetControlRect();
-			var backgroundRect = headerRect;
-
+			
 			float backgroundTint = EditorGUIUtility.isProSkin ? 0.1f : 1f;
 			EditorGUI.DrawRect(headerRect, new Color(backgroundTint, backgroundTint, backgroundTint, 0.2f));
 
-			string displayedName = ObjectNames.NicifyVariableName(property.type);
 
 			headerRect.x += 12;
 			bool isExpanded = EditorGUI.Foldout(headerRect, property.isExpanded, GUIContent.none);
+			property.isExpanded = isExpanded;
 
-			//var enabledProperty = subcomponentProperty
 
 			var toggleRect = headerRect;
 			toggleRect.x += 4;
@@ -159,12 +165,109 @@ namespace Bipolar.Subcomponents.Editor
 				behavior.IsEnabled = EditorGUI.Toggle(toggleRect, behavior.IsEnabled, new GUIStyle("ShurikenToggle"));
 			}
 
-			property.isExpanded = isExpanded;
-#endif	
+
+			var labelRect = headerRect;
+			labelRect.xMin += 20f;
+			labelRect.xMax -= 20f + 16 + 5;
+			string displayedName = ObjectNames.NicifyVariableName(property.type);
+			EditorGUI.LabelField(labelRect, displayedName, EditorStyles.boldLabel);
+
+
+			//var propertyRect = EditorGUILayout.GetControlRect();
+			//EditorGUI.PropertyField(propertyRect, property);
+
+			if (isExpanded)
+			{
+				using (new EditorGUI.IndentLevelScope())
+				{
+
+					//		// Check if a custom property drawer exists for this type.
+					//		PropertyDrawer customDrawer = GetCustomPropertyDrawer(property);
+					//		if (customDrawer != null)
+					//		{
+					//			// Draw the property with custom property drawer.
+					//			Rect indentedRect = position;
+					//			float foldoutDifference = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+					//			indentedRect.height = customDrawer.GetPropertyHeight(property, label);
+					//			indentedRect.y += foldoutDifference;
+					//			customDrawer.OnGUI(indentedRect, property, label);
+					//		}
+					//		else
+					//		{
+					//			// Draw the properties of the child elements.
+					//			// NOTE: In the following code, since the foldout layout isn't working properly, I'll iterate through the properties of the child elements myself.
+					//			// EditorGUI.PropertyField(position, property, GUIContent.none, true);
+
+					//Rect childPosition = position;
+					//childPosition.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+					foreach (SerializedProperty childProperty in property.GetChildProperties())
+					{
+						if (childProperty != null)
+							EditorGUILayout.PropertyField(childProperty, true);
+
+					}
+					//		}
+
+
+				}
+				EditorGUILayout.Space(4);
+			}
+
+
+
+
+#endif
 		}
 
 		private void OnDisable()
 		{
 		}
+	}
+
+	public static class SerializedPropertyExtensions
+	{
+		public static IEnumerable<SerializedProperty> GetChildProperties(this SerializedProperty parent)
+		{
+			int depthOfParent = parent.depth;
+			var iterator = parent.Copy();
+			bool searchChildren = true;
+			while (iterator.Next(searchChildren))
+			{
+				searchChildren = false;
+				if (iterator.depth <= depthOfParent)
+					break;
+
+				yield return iterator.Copy();
+			}
+		}
+
+	}
+
+
+	public static class EditorUtility
+	{
+		public static void DrawSplitter(bool isBoxed = false)
+		{
+			var rect = GUILayoutUtility.GetRect(1f, 1f);
+			float xMin = rect.xMin;
+
+			// Splitter rect should be full-width
+			rect.xMin = 0f;
+			rect.width += 4f;
+
+			if (isBoxed)
+			{
+				rect.xMin = xMin == 7.0 ? 4.0f : EditorGUIUtility.singleLineHeight;
+				rect.width -= 1;
+			}
+
+			if (Event.current.type != EventType.Repaint)
+				return;
+
+			EditorGUI.DrawRect(rect, !EditorGUIUtility.isProSkin
+				? new Color(0.6f, 0.6f, 0.6f, 1.333f)
+				: new Color(0.12f, 0.12f, 0.12f, 1.333f));
+		}
+
 	}
 }

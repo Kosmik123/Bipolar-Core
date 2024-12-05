@@ -5,7 +5,9 @@ using UnityEngine;
 public class ExampleSubcomponent : ISubBehavior
 {
 	public int index;
-	public string name;
+
+	[SerializeField]
+	private string name;
 
 	public bool IsEnabled { get; set; }
 }

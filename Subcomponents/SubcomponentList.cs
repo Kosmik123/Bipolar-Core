@@ -5,8 +5,14 @@ using UnityEngine;
 
 namespace Bipolar.Subcomponents
 {
+	internal interface ISubcomponentList 
+	{
+		int Count { get; }
+		void Update();
+	}
+
 	[System.Serializable]
-	public class SubcomponentList<TComponent> : IList<TComponent>, IReadOnlyList<TComponent>
+	public class SubcomponentList<TComponent> : ISubcomponentList, IList<TComponent>, IReadOnlyList<TComponent>
 		where TComponent : ISubcomponent, new()
 	{
 		[SerializeField] // soon it could be serialize reference
@@ -33,6 +39,7 @@ namespace Bipolar.Subcomponents
 
 		public void Enable()
 		{
+			SubcomponentListUpdater.Instance.AddList(this);
 			foreach (var subcomponent in items.OfType<IEnableCallbackReceiver>())
 				subcomponent.OnEnable();
 		}
@@ -41,6 +48,55 @@ namespace Bipolar.Subcomponents
 		{
 			foreach (var subcomponent in items.OfType<IDisableCallbackReceiver>())
 				subcomponent.OnDisable();
+		}
+
+	    void ISubcomponentList.Update()
+		{
+			for (int i = 0; i < items.Count; i++)
+			{
+
+			}
+		}
+	}
+
+	internal class SubcomponentListUpdater : MonoBehaviour
+	{
+		private static SubcomponentListUpdater instance;
+		public static SubcomponentListUpdater Instance
+		{
+			get
+			{
+				if (instance = null)
+					instance = new GameObject(string.Empty).AddComponent<SubcomponentListUpdater>();
+				return instance;
+			}
+		}
+
+		private List<ISubcomponentList> lists = new List<ISubcomponentList>();
+
+		private void Awake()
+		{
+			if (instance != this)
+				Destroy(gameObject);
+		}
+
+		public void AddList(ISubcomponentList list)
+		{
+			lists.Add(list);
+		}
+
+		private void Update()
+		{
+			for (int i = 0; i < lists.Count; i++)
+			{
+				lists[i].Update();
+			}
+		}
+
+		private void OnDestroy()
+		{
+			if (instance == this)
+				instance = null;
 		}
 	}
 }

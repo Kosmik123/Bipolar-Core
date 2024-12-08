@@ -7,9 +7,10 @@ namespace Bipolar.Subcomponents
 		
 	}
 
-	public interface ISubBehavior : ISubcomponent
+	public abstract class SubBehavior : ISubcomponent, ISubBehavior 
 	{
-		bool IsEnabled { get; set; }
+		[field: SerializeField, HideInInspector]
+		public virtual bool IsEnabled { get; set; }
 	}
 
 	public interface IUpdatable : ISubcomponent
@@ -30,5 +31,10 @@ namespace Bipolar.Subcomponents
 	public static class SubcomponentsExtensions
 	{
 		public static bool IsActiveAndEnabled(this ISubcomponent subcomponent) => default;	
+	}
+
+	internal interface ISubBehavior
+	{
+		bool IsEnabled { get; set; }
 	}
 }

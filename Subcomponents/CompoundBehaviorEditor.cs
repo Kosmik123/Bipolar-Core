@@ -43,7 +43,7 @@ namespace Bipolar.Subcomponents.Editor
 				EditorUtility.DrawSplitter();
 				GUILayout.Space(6);
 
-				if (count >= 0 && GUILayout.Button($"Add Component ({count})", EditorStyles.miniButton))
+				if (count >= 0 && GUILayout.Button($"Add Component", EditorStyles.miniButton))
 				{
 					componentsListProperty.InsertArrayElementAtIndex(count);
 					var createdItemProperty = componentsListProperty.GetArrayElementAtIndex(count);
@@ -144,12 +144,14 @@ namespace Bipolar.Subcomponents.Editor
 			}
 
 #else
-			var headerRect = EditorGUILayout.GetControlRect();
-			
+			var headerRect = GUILayoutUtility.GetRect(1f, 18f); //EditorGUILayout.GetControlRect();
+
+			var backgroundRect = headerRect;
+			backgroundRect.xMin = 0;
 			float backgroundTint = EditorGUIUtility.isProSkin ? 0.1f : 1f;
-			EditorGUI.DrawRect(headerRect, new Color(backgroundTint, backgroundTint, backgroundTint, 0.2f));
+			EditorGUI.DrawRect(backgroundRect, new Color(backgroundTint, backgroundTint, backgroundTint, 0.2f));
 
-
+			headerRect.y -= 1;
 			headerRect.x += 12;
 			bool isExpanded = EditorGUI.Foldout(headerRect, property.isExpanded, GUIContent.none);
 			property.isExpanded = isExpanded;
@@ -160,17 +162,17 @@ namespace Bipolar.Subcomponents.Editor
 			toggleRect.y += 3;
 			toggleRect.width = 20;
 
-			if (subcomponent is ISubBehavior behavior) 
+			if (subcomponent is SubBehavior behavior)
 			{
 				behavior.IsEnabled = EditorGUI.Toggle(toggleRect, behavior.IsEnabled, new GUIStyle("ShurikenToggle"));
 			}
 
-
 			var labelRect = headerRect;
 			labelRect.xMin += 20f;
 			labelRect.xMax -= 20f + 16 + 5;
-			string displayedName = ObjectNames.NicifyVariableName(property.type);
-			EditorGUI.LabelField(labelRect, displayedName, EditorStyles.boldLabel);
+			string typeName = subcomponent.GetType().Name;
+
+			EditorGUI.LabelField(labelRect, ObjectNames.NicifyVariableName(typeName), EditorStyles.boldLabel);
 
 
 			//var propertyRect = EditorGUILayout.GetControlRect();
@@ -200,11 +202,12 @@ namespace Bipolar.Subcomponents.Editor
 
 					//Rect childPosition = position;
 					//childPosition.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-					foreach (SerializedProperty childProperty in property.GetChildProperties())
+					foreach (var childProperty in GetChildProperties(property))
 					{
-						if (childProperty != null)
+						if (childProperty != null && childProperty.name != "<IsEnabled>k__BackingField")
+						{
 							EditorGUILayout.PropertyField(childProperty, true);
-
+						}
 					}
 					//		}
 
@@ -219,14 +222,22 @@ namespace Bipolar.Subcomponents.Editor
 #endif
 		}
 
-		private void OnDisable()
+		private static string GetPropertyTypeName(SerializedProperty property)
 		{
-		}
-	}
+			var typeName = property.type;
+			if (property.propertyType != SerializedPropertyType.ManagedReference)
+				return typeName;
+			
+			int typeNameStart = typeName.IndexOf('<') + 1;
+			int typeNameEnd = typeName.LastIndexOf('>');
+			int typeNameLength = typeNameEnd - typeNameStart;
+			if (typeNameLength < 0)
+				return string.Empty;
 
-	public static class SerializedPropertyExtensions
-	{
-		public static IEnumerable<SerializedProperty> GetChildProperties(this SerializedProperty parent)
+			return typeName.Substring(typeNameStart, typeNameLength);
+		}
+
+		public static IEnumerable<SerializedProperty> GetChildProperties(SerializedProperty parent)
 		{
 			int depthOfParent = parent.depth;
 			var iterator = parent.Copy();
@@ -240,6 +251,9 @@ namespace Bipolar.Subcomponents.Editor
 				yield return iterator.Copy();
 			}
 		}
+		private void OnDisable()
+		{
+		}
 
 	}
 
@@ -250,7 +264,8 @@ namespace Bipolar.Subcomponents.Editor
 		{
 			var rect = GUILayoutUtility.GetRect(1f, 1f);
 			float xMin = rect.xMin;
-
+			rect.x -= 1;
+			
 			// Splitter rect should be full-width
 			rect.xMin = 0f;
 			rect.width += 4f;
@@ -268,6 +283,10 @@ namespace Bipolar.Subcomponents.Editor
 				? new Color(0.6f, 0.6f, 0.6f, 1.333f)
 				: new Color(0.12f, 0.12f, 0.12f, 1.333f));
 		}
+	}
+
+	public class AddSubcomponentWindow
+	{
 
 	}
 }

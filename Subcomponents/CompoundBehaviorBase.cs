@@ -13,7 +13,7 @@ namespace Bipolar.Subcomponents
 	public class CompoundBehavior<TComponent> : MonoBehaviour, ICompoundBehavior
 		where TComponent : ISubcomponent
 	{
-		[SerializeField] // it must be serialize reference since every component will be different type
+		[SerializeReference] // it must be serialize reference since every component will be different type
 		[HideInInspector]
 		internal protected List<TComponent> subcomponents = new List<TComponent>();
 
@@ -96,7 +96,7 @@ namespace Bipolar.Subcomponents
 			for (int i = 0; i < updatableSubcomponents.Count; i++)
 			{
 				var updatable = updatableSubcomponents[i];
-				//if (updatable.IsEnabled)
+				if (!(updatable is SubBehavior subBehavior) || subBehavior.IsEnabled)
 					updatable.Update();
 			}
 		}

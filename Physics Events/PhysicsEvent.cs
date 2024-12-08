@@ -3,28 +3,32 @@ using UnityEngine.Events;
 
 namespace Bipolar.PhysicsEvents
 {
-    public abstract class PhysicsEventBase<T> : MonoBehaviour where T : class
+	public abstract class PhysicsEventBase<T> : MonoBehaviour 
+        where T : class
     {
         public delegate void PhysicsEventHandler(T collision);
 
         public event PhysicsEventHandler OnHappened;
 
-        [SerializeField]
 #if NAUGHTY_ATTRIBUTES
-        [NaughtyAttributes.Tag]
+		[NaughtyAttributes.Tag]
 #endif
+        [SerializeField]
         [Tooltip("Specify tags to check. If empty: all tags will trigger the event")]
         private string[] detectedTags;
 
         [SerializeField]
         private UnityEvent onEventHappen = new UnityEvent();
-        
+
         public void Clear()
         {
-            OnHappened = null;
+            onEventHappen.RemoveAllListeners();
+			OnHappened = null;
         }
 
-        protected void InvokeEvents(T data)
+		protected abstract GameObject GetGameObject(T data);
+
+		protected void InvokeEvents(T data)
         {
             onEventHappen.Invoke();
             OnHappened?.Invoke(data);
@@ -42,36 +46,31 @@ namespace Bipolar.PhysicsEvents
             return false;
         }
 
-        protected abstract void TryInvokeEvent(T data);
-    }
 
-    public abstract class TriggerEvent<T> : PhysicsEventBase<T> where T : Component
-    {
-        protected override void TryInvokeEvent(T collider)
+        protected void TryInvokeEvent(T data)
         {
-            if (CompareTag(collider.gameObject))
-                InvokeEvents(collider);
+            if (CompareTag(GetGameObject(data)))
+                InvokeEvents(data);
         }
     }
 
-    public abstract class CollisionEvent<T> : PhysicsEventBase<T> where T : class
+    public abstract class TriggerEvent<T> : PhysicsEventBase<T>
+        where T : Component
+    {
+		protected override GameObject GetGameObject(T data) => data.gameObject;
+    }
+
+    public abstract class CollisionEvent<T> : PhysicsEventBase<T>
+        where T : class
     { }
 
     public abstract class Collision2DEvent : CollisionEvent<Collision2D>
     {
-        protected override void TryInvokeEvent(Collision2D collision)
-        {
-            if (CompareTag(collision.gameObject))
-                InvokeEvents(collision);
-        }
-    }
+		protected override GameObject GetGameObject(Collision2D data) => data.gameObject;
+	}
 
     public abstract class Collision3DEvent : CollisionEvent<Collision>
     {
-        protected override void TryInvokeEvent(Collision collision)
-        {
-            if (CompareTag(collision.gameObject))
-                InvokeEvents(collision);
-        }
-    }
+		protected override GameObject GetGameObject(Collision data) => data.gameObject;
+	}
 }

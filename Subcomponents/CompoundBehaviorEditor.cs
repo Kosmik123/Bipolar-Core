@@ -1,7 +1,9 @@
 ﻿#define VOLUME
 
+using System;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
 namespace Bipolar.Subcomponents.Editor
@@ -11,6 +13,8 @@ namespace Bipolar.Subcomponents.Editor
 	{
 		private SerializedProperty componentsListProperty;
 		private ICompoundBehavior compoundBehavior;
+
+		private static readonly GUIContent buttonContent = new GUIContent($"Add Subcomponent");
 
 		private void OnEnable()
 		{
@@ -43,10 +47,18 @@ namespace Bipolar.Subcomponents.Editor
 				EditorUtility.DrawSplitter();
 				GUILayout.Space(6);
 
-				if (count >= 0 && GUILayout.Button($"Add Component", EditorStyles.miniButton))
+				var buttonRect = EditorGUILayout.GetControlRect(); 
+				if (count >= 0 && EditorGUI.DropdownButton(buttonRect, buttonContent, FocusType.Keyboard, EditorStyles.miniButton))
 				{
-					componentsListProperty.InsertArrayElementAtIndex(count);
-					var createdItemProperty = componentsListProperty.GetArrayElementAtIndex(count);
+					var popupRect = buttonRect;
+					var center = popupRect.center;
+					popupRect.width = 250;
+					popupRect.center = center;
+					//componentsListProperty.InsertArrayElementAtIndex(count);
+					//var createdItemProperty = componentsListProperty.GetArrayElementAtIndex(count);
+					//AddSubcomponentWindow.Show(compoundBehavior.SubcomponentsType, buttonRect);
+					var popup = new AddSubcomponentPopup(compoundBehavior.SubcomponentsType);
+					popup.Show(popupRect);
 					changed = true;
 				}
 				GUILayout.Space(6);
@@ -174,7 +186,6 @@ namespace Bipolar.Subcomponents.Editor
 
 			EditorGUI.LabelField(labelRect, ObjectNames.NicifyVariableName(typeName), EditorStyles.boldLabel);
 
-
 			//var propertyRect = EditorGUILayout.GetControlRect();
 			//EditorGUI.PropertyField(propertyRect, property);
 
@@ -215,10 +226,6 @@ namespace Bipolar.Subcomponents.Editor
 				}
 				EditorGUILayout.Space(4);
 			}
-
-
-
-
 #endif
 		}
 
@@ -254,9 +261,7 @@ namespace Bipolar.Subcomponents.Editor
 		private void OnDisable()
 		{
 		}
-
 	}
-
 
 	public static class EditorUtility
 	{
@@ -279,14 +284,59 @@ namespace Bipolar.Subcomponents.Editor
 			if (Event.current.type != EventType.Repaint)
 				return;
 
-			EditorGUI.DrawRect(rect, !EditorGUIUtility.isProSkin
-				? new Color(0.6f, 0.6f, 0.6f, 1.333f)
-				: new Color(0.12f, 0.12f, 0.12f, 1.333f));
+			EditorGUI.DrawRect(rect, EditorGUIUtility.isProSkin
+				? new Color(0.12f, 0.12f, 0.12f, 1.333f)
+				: new Color(0.6f, 0.6f, 0.6f, 1.333f));
 		}
 	}
 
-	public class AddSubcomponentWindow
+	internal class AddSubcomponentPopup : AdvancedDropdown
 	{
+		public Type Type { get; private set; }
 
+		internal AddSubcomponentPopup(Type subcomponentType) : base (new AdvancedDropdownState())
+		{
+
+			Type = subcomponentType;
+		}
+
+		protected override AdvancedDropdownItem BuildRoot()
+		{
+			return new AdvancedDropdownItem("Subcomponent");
+		}
+	}
+
+	//internal class AddSubcomponentWindowContent : PopupWindowContent
+	internal class AddSubcomponentWindow : EditorWindow
+	{
+		public Type Type { get; private set; }
+
+		public static AddSubcomponentWindow Show(Type subcomponentType, Rect buttonRect)
+		{
+			//PopupWindow.Show(new Rect(0, 0, 200, 300), new AddSubcomponentWindow());
+
+			var window = GetWindow<AddSubcomponentWindow>();
+
+			window.Type = subcomponentType;
+			//window.ShowPopup(); // buttonRect, new Vector2(200, 300));
+			window.titleContent = null;
+			//window.ShowAuxWindow();
+			window.ShowModalUtility();
+			window.Focus();
+
+			//window.titleContent = null;//	 new GUIContent(subcomponentType.Name);
+			//return null;
+			return window;
+		}
+
+		private void OnLostFocus()
+		{
+			Close();
+		}
+
+		//public override void OnGUI(Rect rect)
+		//{
+		//	EditorGUI.LabelField(new Rect(), Type.Name);
+		//}
 	}
 }

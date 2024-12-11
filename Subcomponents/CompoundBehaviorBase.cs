@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -8,6 +9,7 @@ namespace Bipolar.Subcomponents
 	{
 		int SubcomponentsCount { get; }
 		IReadOnlyList<ISubcomponent> Subcomponents { get; }
+		Type SubcomponentsType { get; }
 	}
 
 	public class CompoundBehavior<TComponent> : MonoBehaviour, ICompoundBehavior
@@ -22,6 +24,8 @@ namespace Bipolar.Subcomponents
 		public int SubcomponentsCount => subcomponents.Count;
 		public IReadOnlyList<TComponent> Subcomponents => subcomponents;
 		IReadOnlyList<ISubcomponent> ICompoundBehavior.Subcomponents => (IReadOnlyList<ISubcomponent>)subcomponents;
+
+		public Type SubcomponentsType => typeof(TComponent);
 
 		public TComponent AddSubcomponent<T>()
 			where T : TComponent, new()

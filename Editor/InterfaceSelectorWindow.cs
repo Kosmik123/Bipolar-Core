@@ -85,7 +85,7 @@ namespace Bipolar.Editor
                 if (existingData != null)
                 {
                     existingData.isFocused = false;
-                    return existingData; ;
+                    return existingData;
                 }
             }
 

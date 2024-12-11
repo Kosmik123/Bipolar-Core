@@ -1,5 +1,4 @@
 ﻿using Bipolar.Subcomponents;
-using UnityEditor;
 using UnityEngine;
 
 [System.Serializable]

@@ -1,7 +1,10 @@
 {
     "name": "Bipolar.Subcomponents",
     "rootNamespace": "Bipolar.Subcomponents",
-    "references": [],
+    "references": [
+        "GUID:df380645f10b7bc4b97d4f5eb6303d95",
+        "GUID:3eae0364be2026648bf74846acb8a731"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

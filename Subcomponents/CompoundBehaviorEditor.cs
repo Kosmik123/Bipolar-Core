@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
@@ -57,7 +58,7 @@ namespace Bipolar.Subcomponents.Editor
 					//componentsListProperty.InsertArrayElementAtIndex(count);
 					//var createdItemProperty = componentsListProperty.GetArrayElementAtIndex(count);
 					//AddSubcomponentWindow.Show(compoundBehavior.SubcomponentsType, buttonRect);
-					var popup = new AddSubcomponentPopup(compoundBehavior.SubcomponentsType);
+					var popup = AddSubcomponentPopup.Get(compoundBehavior.SubcomponentsType);
 					popup.Show(popupRect);
 					changed = true;
 				}
@@ -265,6 +266,7 @@ namespace Bipolar.Subcomponents.Editor
 
 	public static class EditorUtility
 	{
+
 		public static void DrawSplitter(bool isBoxed = false)
 		{
 			var rect = GUILayoutUtility.GetRect(1f, 1f);
@@ -292,18 +294,70 @@ namespace Bipolar.Subcomponents.Editor
 
 	internal class AddSubcomponentPopup : AdvancedDropdown
 	{
-		public Type Type { get; private set; }
-
-		internal AddSubcomponentPopup(Type subcomponentType) : base (new AdvancedDropdownState())
+		public class Item : AdvancedDropdownItem
 		{
+			public Type Type { get; }
 
-			Type = subcomponentType;
+			public Item(Type type) : this(type, ObjectNames.NicifyVariableName(type.Name)) 
+			{ }
+			
+			public Item(Type type, string name) : base(name)
+			{
+				Type = type;
+			}
 		}
 
-		protected override AdvancedDropdownItem BuildRoot()
+		private static readonly Dictionary<Type, AddSubcomponentPopup> cachedPopups = new Dictionary<Type, AddSubcomponentPopup>();
+
+		public Type SubcomponentType { get; private set; }
+		public ICollection<Type> Types { get; private set; }
+
+		private AdvancedDropdownItem root;
+
+		public static AddSubcomponentPopup Get(Type subcomponentType)
 		{
-			return new AdvancedDropdownItem("Subcomponent");
+			if (cachedPopups.TryGetValue(subcomponentType, out var popup) == false)
+			{
+				popup = new AddSubcomponentPopup(subcomponentType);
+				cachedPopups.Add(subcomponentType, popup);
+			}
+			return popup;
 		}
+
+		private AddSubcomponentPopup(Type subcomponentType) : base (new AdvancedDropdownState())
+		{
+			SubcomponentType = subcomponentType;
+			Types = TypeCache.GetTypesDerivedFrom(SubcomponentType);
+			
+			root = new AdvancedDropdownItem("Subcomponent");
+			foreach (var type in Types)
+			{
+				if (type.IsDefined(typeof(AddComponentMenu), true)) 
+				{
+					var attribute = (AddComponentMenu)type.GetCustomAttributes(typeof(AddComponentMenu), true)[0];
+					var path = attribute.componentMenu;
+					string[] pathItems = path.Contains('/') 
+						? path.Split('/')
+						: path.Split('\\');
+
+					var subcomponentName = pathItems[pathItems.Length - 1];
+					if (string.IsNullOrWhiteSpace(subcomponentName) == false)
+					{
+						var node = root;
+						for (int i = 0; i < pathItems.Length - 1; i++)
+						{
+							node = node.GetOrCreateChild(pathItems[i]);
+						}
+						node.AddChild(new Item(type, subcomponentName));
+					}
+					continue;
+				}
+
+				root.AddChild(new Item(type));
+			}
+		}
+
+		protected override AdvancedDropdownItem BuildRoot() => root;
 	}
 
 	//internal class AddSubcomponentWindowContent : PopupWindowContent
@@ -338,5 +392,27 @@ namespace Bipolar.Subcomponents.Editor
 		//{
 		//	EditorGUI.LabelField(new Rect(), Type.Name);
 		//}
+	}
+
+	public static class AdvancedDropdownItemExtension
+	{
+		public static AdvancedDropdownItem WithChildrenAdded(this AdvancedDropdownItem parent, IEnumerable<AdvancedDropdownItem> children)
+		{
+			foreach (var child in children)
+				parent.AddChild(child);
+			return parent;
+		}
+
+		public static AdvancedDropdownItem GetOrCreateChild(this AdvancedDropdownItem parent, string childName)
+		{
+			var child = parent.children.FirstOrDefault(ch => ch.name == childName);
+			if (child == null)
+			{
+				child = new AdvancedDropdownItem(childName);
+				parent.AddChild(child);
+			}
+
+			return child;
+		}
 	}
 }

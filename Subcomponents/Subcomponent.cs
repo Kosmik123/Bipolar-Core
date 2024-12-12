@@ -3,9 +3,7 @@ using UnityEngine;
 namespace Bipolar.Subcomponents
 {
 	public interface ISubcomponent
-	{
-		
-	}
+	{ }
 
 	public abstract class SubBehavior : ISubcomponent, ISubBehavior 
 	{

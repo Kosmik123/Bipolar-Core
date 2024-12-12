@@ -45,7 +45,6 @@ namespace Bipolar.Subcomponents.Editor
 				}
 				changed |= EditorGUI.EndChangeCheck();
 
-
 				EditorUtility.DrawSplitter();
 				GUILayout.Space(6);
 
@@ -53,15 +52,10 @@ namespace Bipolar.Subcomponents.Editor
 				if (count >= 0 && EditorGUI.DropdownButton(buttonRect, buttonContent, FocusType.Keyboard, EditorStyles.miniButton))
 				{
 					var popupRect = buttonRect;
-					var center = popupRect.center;
 					popupRect.width = 250;
-					popupRect.center = center;
-					//componentsListProperty.InsertArrayElementAtIndex(count);
-					//var createdItemProperty = componentsListProperty.GetArrayElementAtIndex(count);
-					//AddSubcomponentWindow.Show(compoundBehavior.SubcomponentsType, buttonRect);
+					popupRect.center = buttonRect.center;
 					var popup = AddSubcomponentPopup.Get(compoundBehavior.SubcomponentsType);
 					popup.Show(popupRect);
-					popup.OnItemSelected -= AddSubcomponentFromButton;
 					popup.OnItemSelected += AddSubcomponentFromButton;
 					changed = true;
 				}
@@ -183,7 +177,6 @@ namespace Bipolar.Subcomponents.Editor
 			headerRect.y -= 1;
 			headerRect.x += 12;
 			bool isExpanded = EditorGUI.Foldout(headerRect, property.isExpanded, GUIContent.none);
-			property.isExpanded = isExpanded;
 
 
 			var toggleRect = headerRect;
@@ -202,6 +195,14 @@ namespace Bipolar.Subcomponents.Editor
 			string typeName = subcomponent.GetType().Name;
 
 			EditorGUI.LabelField(labelRect, ObjectNames.NicifyVariableName(typeName), EditorStyles.boldLabel);
+
+			var ev = Event.current;
+			if (ev.type == EventType.MouseUp && labelRect.Contains(ev.mousePosition))
+			{
+				isExpanded = !isExpanded;
+				ev.Use();
+			}
+
 
 			//var propertyRect = EditorGUILayout.GetControlRect();
 			//EditorGUI.PropertyField(propertyRect, property);
@@ -243,6 +244,7 @@ namespace Bipolar.Subcomponents.Editor
 				}
 				EditorGUILayout.Space(4);
 			}
+			property.isExpanded = isExpanded;
 #endif
 		}
 
@@ -325,7 +327,6 @@ namespace Bipolar.Subcomponents.Editor
 
 		private static readonly Dictionary<Type, AddSubcomponentPopup> cachedPopups = new Dictionary<Type, AddSubcomponentPopup>();
 
-
 		public event Action<Item> OnItemSelected;
 
 		public Type SubcomponentType { get; private set; }
@@ -339,6 +340,7 @@ namespace Bipolar.Subcomponents.Editor
 				popup = new AddSubcomponentPopup(subcomponentType);
 				cachedPopups.Add(subcomponentType, popup);
 			}
+			popup.OnItemSelected = null;
 			return popup;
 		}
 

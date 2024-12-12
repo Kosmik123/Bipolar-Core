@@ -21,7 +21,7 @@ public class CompoundExample : CompoundBehavior<ExampleSubcomponentBase>
 	}
 }
 
-[AddComponentMenu("Category/Subcomponent A")]
+[AddComponentMenu("Category/Subcomponent A", 10)]
 public class ExampleSubcomponentA : ExampleSubcomponentBase
 {
 	public float power;
@@ -38,7 +38,7 @@ public class ExampleSubcomponentC : ExampleSubcomponentBase
 	public float power;
 }
 
-[AddComponentMenu("Category/Subcomponent D")]
+[AddComponentMenu("Category/Subcomponent D", 0)]
 public class ExampleSubcomponentD : ExampleSubcomponentBase
 {
 	public int health;

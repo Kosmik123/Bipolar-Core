@@ -29,6 +29,7 @@ namespace Bipolar.Subcomponents.Editor
 
 			if (componentsListProperty != null)
 			{
+				serializedObject.Update();
 				GUILayout.Space(10);
 				bool changed = false;
 
@@ -60,6 +61,8 @@ namespace Bipolar.Subcomponents.Editor
 					//AddSubcomponentWindow.Show(compoundBehavior.SubcomponentsType, buttonRect);
 					var popup = AddSubcomponentPopup.Get(compoundBehavior.SubcomponentsType);
 					popup.Show(popupRect);
+					popup.OnItemSelected -= AddSubcomponentFromButton;
+					popup.OnItemSelected += AddSubcomponentFromButton;
 					changed = true;
 				}
 				GUILayout.Space(6);
@@ -67,6 +70,19 @@ namespace Bipolar.Subcomponents.Editor
 				if (changed)
 					serializedObject.ApplyModifiedProperties();
 			}
+		}
+
+		private void AddSubcomponentFromButton(AddSubcomponentPopup.Item item)
+		{
+			var subcomponentType = item.Type;
+			int count = componentsListProperty.arraySize;
+
+			componentsListProperty.InsertArrayElementAtIndex(count);
+			var newSubcomponentProperty = componentsListProperty.GetArrayElementAtIndex(count);
+
+			var newSubcomponent = Activator.CreateInstance(subcomponentType);
+			newSubcomponentProperty.managedReferenceValue = newSubcomponent;
+			componentsListProperty.serializedObject.ApplyModifiedProperties();
 		}
 
 		public static void DrawSubcomponent(SerializedProperty property, ISubcomponent subcomponent)
@@ -309,6 +325,9 @@ namespace Bipolar.Subcomponents.Editor
 
 		private static readonly Dictionary<Type, AddSubcomponentPopup> cachedPopups = new Dictionary<Type, AddSubcomponentPopup>();
 
+
+		public event Action<Item> OnItemSelected;
+
 		public Type SubcomponentType { get; private set; }
 
 		private AdvancedDropdownItem root;
@@ -327,14 +346,7 @@ namespace Bipolar.Subcomponents.Editor
 		{
 			SubcomponentType = subcomponentType;
 			var types = TypeCache.GetTypesDerivedFrom(SubcomponentType);
-
-
-			var builder = new AddSubcomponentPopupItemBuilder();
-			
-			
-			
-			var orderedTypes = new List<(Type type, string[] path, int order)>();
-			var unorderedTypes = new List<Type>();
+			var builder = new AddSubcomponentPopupItemBuilder();	
 			foreach (var type in types)
 			{
 				if (type.IsDefined(typeof(AddComponentMenu), true))
@@ -349,34 +361,25 @@ namespace Bipolar.Subcomponents.Editor
 					if (string.IsNullOrWhiteSpace(subcomponentName) == false)
 					{
 						builder.AddType(type, pathItems, attribute.componentOrder);
-
-						//orderedTypes.Add((type, pathItems, attribute.componentOrder));
 						continue;
 					}
 				}
-				//unorderedTypes.Add(type);
 				builder.AddType(type);
 			}
 
 			root = builder.Build();
-
-			//orderedTypes.Sort((x, y) => x.order.CompareTo(y.order));
-			//root = new AdvancedDropdownItem("Subcomponent");
-			//foreach (var (type, path, _) in orderedTypes)
-			//{
-			//	var node = root;
-			//	for (int i = 0; i < path.Length - 1; i++)
-			//		node = node.GetOrCreateChild(path[i]);
-
-			//	node.AddChild(new Item(type, path[path.Length - 1]));
-			//}
-
-			//foreach (var type in unorderedTypes)
-			//	root.AddChild(new Item(type));
 		}
 
 		protected override AdvancedDropdownItem BuildRoot() => root;
 
+		protected override void ItemSelected(AdvancedDropdownItem item)
+		{
+			base.ItemSelected(item);
+			if (item is Item addSubcomponentItem)
+			{
+				OnItemSelected?.Invoke(addSubcomponentItem);
+			}
+		}
 	}
 
 	public class AddSubcomponentPopupItemBuilder
@@ -447,62 +450,5 @@ namespace Bipolar.Subcomponents.Editor
 		public void Clear() => root.Clear();
 
 		public AdvancedDropdownItem Build() => root.Build();
-	}
-
-
-	//internal class AddSubcomponentWindowContent : PopupWindowContent
-	internal class AddSubcomponentWindow : EditorWindow
-	{
-		public Type Type { get; private set; }
-
-		public static AddSubcomponentWindow Show(Type subcomponentType, Rect buttonRect)
-		{
-			//PopupWindow.Show(new Rect(0, 0, 200, 300), new AddSubcomponentWindow());
-
-			var window = GetWindow<AddSubcomponentWindow>();
-
-			window.Type = subcomponentType;
-			//window.ShowPopup(); // buttonRect, new Vector2(200, 300));
-			window.titleContent = null;
-			//window.ShowAuxWindow();
-			window.ShowModalUtility();
-			window.Focus();
-
-			//window.titleContent = null;//	 new GUIContent(subcomponentType.Name);
-			//return null;
-			return window;
-		}
-
-		private void OnLostFocus()
-		{
-			Close();
-		}
-
-		//public override void OnGUI(Rect rect)
-		//{
-		//	EditorGUI.LabelField(new Rect(), Type.Name);
-		//}
-	}
-
-	public static class AdvancedDropdownItemExtension
-	{
-		public static AdvancedDropdownItem WithChildrenAdded(this AdvancedDropdownItem parent, IEnumerable<AdvancedDropdownItem> children)
-		{
-			foreach (var child in children)
-				parent.AddChild(child);
-			return parent;
-		}
-
-		public static AdvancedDropdownItem GetOrCreateChild(this AdvancedDropdownItem parent, string childName)
-		{
-			var child = parent.children.FirstOrDefault(ch => ch.name == childName);
-			if (child == null)
-			{
-				child = new AdvancedDropdownItem(childName);
-				parent.AddChild(child);
-			}
-
-			return child;
-		}
 	}
 }

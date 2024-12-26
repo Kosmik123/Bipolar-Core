@@ -50,7 +50,7 @@ namespace Bipolar
 
 	public static class ComponentExtensions
 	{
-		public static T GetRequired<T>(this MonoBehaviour owner, ref T component) where T : Component
+		public static T GetRequired<T>(this Component owner, ref T component) where T : Component
 		{
 			if (component == null)
 				component = owner.GetComponent<T>();

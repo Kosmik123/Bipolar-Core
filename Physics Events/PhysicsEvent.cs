@@ -8,7 +8,7 @@ namespace Bipolar.PhysicsEvents
     {
         public delegate void PhysicsEventHandler(T collision);
 
-        public event PhysicsEventHandler OnHappened;
+        public event PhysicsEventHandler Happened;
 
 #if NAUGHTY_ATTRIBUTES
 		[NaughtyAttributes.Tag]
@@ -17,13 +17,13 @@ namespace Bipolar.PhysicsEvents
         [Tooltip("Specify tags to check. If empty: all tags will trigger the event")]
         private string[] detectedTags;
 
-        [SerializeField]
+        [Space, SerializeField]
         private UnityEvent onEventHappen = new UnityEvent();
 
         public void Clear()
         {
             onEventHappen.RemoveAllListeners();
-			OnHappened = null;
+			Happened = null;
         }
 
 		protected abstract GameObject GetGameObject(T data);
@@ -31,7 +31,7 @@ namespace Bipolar.PhysicsEvents
 		protected void InvokeEvents(T data)
         {
             onEventHappen.Invoke();
-            OnHappened?.Invoke(data);
+            Happened?.Invoke(data);
         }
 
         protected bool CompareTag(GameObject other)

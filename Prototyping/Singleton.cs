@@ -1,15 +1,16 @@
-﻿using UnityEngine;
+﻿using Codice.Client.Common;
+using UnityEngine;
 
 namespace Bipolar.Prototyping
 {
-    public abstract class SceneSingleton<TSelf> : MonoBehaviour 
+    public abstract class SceneSingleton<TSelf> : MonoBehaviour
         where TSelf : SceneSingleton<TSelf>
     {
         public static TSelf Instance { get; private set; }
 
         protected virtual void Awake()
         {
-            if (Instance == null) 
+            if (Instance == null)
             {
                 Instance = (TSelf)this;
             }
@@ -26,7 +27,7 @@ namespace Bipolar.Prototyping
     }
 
     public abstract class SelfCreatingSingleton<TSelf> : MonoBehaviour
-		where TSelf : SelfCreatingSingleton<TSelf>
+        where TSelf : SelfCreatingSingleton<TSelf>
     {
         private static TSelf instance;
         public static TSelf Instance
@@ -39,17 +40,60 @@ namespace Bipolar.Prototyping
             }
         }
 
-		protected virtual void Awake()
-		{
+        protected virtual void Awake()
+        {
             if (instance == null)
                 instance = (TSelf)this;
             else if (instance != this)
                 Destroy(this);
         }
 
-		protected virtual void OnDestroy()
-		{
-			instance = null;
-		}
-	}
+        protected virtual void OnDestroy()
+        {
+            instance = null;
+        }
+    }
+
+    public abstract class ScriptableSingleton<TSelf> : ScriptableObject
+        where TSelf : ScriptableSingleton<TSelf>
+    {
+        private static TSelf instance;
+        public static TSelf Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    var all = Resources.FindObjectsOfTypeAll<TSelf>();
+                    if (all != null && all.Length > 0)
+                    {
+                        instance = all[0];
+                    }
+                    else
+                    {
+                        instance = CreateInstance<TSelf>();
+                    }
+                }
+
+                return instance;
+            }
+        }
+
+        private void Awake()
+        {
+            if (Application.isPlaying)
+            {
+                if (instance == null)
+                    instance = (TSelf)this;
+                else if (instance != this)
+                    Destroy(this);
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (instance == this)
+                instance = null;
+        }
+    }
 }

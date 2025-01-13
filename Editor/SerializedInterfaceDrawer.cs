@@ -14,14 +14,16 @@ namespace Bipolar.Editor
 
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
-			EditorGUI.BeginProperty(position, label, property);
+			//EditorGUI.BeginProperty(position, label, property);
 
 			var objectFieldRect = new Rect(position.x, position.y, position.width - InterfaceSelectorButton.Width, position.height);
 			var interfaceButtonRect = new Rect(position.x + objectFieldRect.width, position.y, InterfaceSelectorButton.Width, position.height);
 
 			var serializedObjectProperty = property.FindPropertyRelative(serializedObjectPropertyName);
 
-			var requiredType = GetRequiredType();
+			var requiredType = GetRequiredType(out var isCollection);
+			if (isCollection)
+				property.serializedObject.Update();
 			if (requiredType != default)
 			{
 				serializedObjectProperty.objectReferenceValue = EditorGUI.ObjectField(objectFieldRect, label, serializedObjectProperty.objectReferenceValue, requiredType, true);
@@ -33,11 +35,14 @@ namespace Bipolar.Editor
 			}
 			else
 			{
-
 			}
 
-
-			EditorGUI.EndProperty();
+			if (isCollection)
+			{
+				property.serializedObject.ApplyModifiedProperties();
+			}
+			//EditorGUI.EndProperty();
+			property.serializedObject.Update();
 		}
 
 		private static void AssignValue(SerializedProperty property, Object @object)
@@ -46,13 +51,17 @@ namespace Bipolar.Editor
 			property.serializedObject.ApplyModifiedProperties();
 		}
 
-		private System.Type GetRequiredType()
+		private System.Type GetRequiredType(out bool isCollection)
 		{
+			isCollection = false;
 			var type = fieldInfo.FieldType;
 			while (type != null)
 			{
 				if (type.IsArray)
+				{
+					isCollection = true;
 					type = type.GetElementType();
+				}
 
 				if (type == null)
 					return null;
@@ -64,6 +73,7 @@ namespace Bipolar.Editor
 
 					if (typeof(IEnumerable).IsAssignableFrom(type))
 					{
+						isCollection = true;
 						type = type.GetGenericArguments()?[0];
 						continue;
 					}

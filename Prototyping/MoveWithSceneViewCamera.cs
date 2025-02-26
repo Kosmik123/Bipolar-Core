@@ -3,7 +3,7 @@
 namespace Bipolar.Prototyping
 {
 #if UNITY_EDITOR
-	public class MoveAfterEditor : MonoBehaviour
+	public class MoveWithSceneViewCamera : MonoBehaviour
 	{
 		private void Update()
 		{

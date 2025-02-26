@@ -1,99 +1,66 @@
-﻿using Codice.Client.Common;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Bipolar.Prototyping
 {
-    public abstract class SceneSingleton<TSelf> : MonoBehaviour
-        where TSelf : SceneSingleton<TSelf>
+	public interface ISingletonProvider<TSingleton> 
+		where TSingleton : ISingleton<TSingleton> 
+	{
+		public TSingleton Get();
+	}
+
+	public interface ISingleton<TSelf> 
+		where TSelf : ISingleton<TSelf>
+	{ }
+
+	public abstract class SceneSingleton<TSelf, TProvider> : MonoBehaviour, ISingleton<TSelf>
+        where TSelf : SceneSingleton<TSelf, TProvider>
+        where TProvider : ISingletonProvider<TSelf>, new()
     {
-        public static TSelf Instance { get; private set; }
+		private static readonly TProvider instanceProvider = new TProvider();
 
-        protected virtual void Awake()
-        {
-            if (Instance == null)
-            {
-                Instance = (TSelf)this;
-            }
-            else if (Instance != this)
-            {
-                Destroy(this);
-            }
-        }
-
-        protected virtual void OnDestroy()
-        {
-            Instance = null;
-        }
-    }
-
-    public abstract class SelfCreatingSingleton<TSelf> : MonoBehaviour
-        where TSelf : SelfCreatingSingleton<TSelf>
-    {
-        private static TSelf instance;
+		private static TSelf instance;
         public static TSelf Instance
         {
             get
             {
                 if (instance == null)
-                    instance = new GameObject(typeof(TSelf).Name).AddComponent<TSelf>();
+                    instance = instanceProvider.Get();
                 return instance;
             }
         }
 
-        protected virtual void Awake()
-        {
-            if (instance == null)
-                instance = (TSelf)this;
-            else if (instance != this)
-                Destroy(this);
-        }
+		protected virtual void Awake()
+		{
+			if (Instance == null)
+			    instance = (TSelf)this;
+			else if (Instance != this)
+				Destroy(this);
+		}
 
-        protected virtual void OnDestroy()
-        {
-            instance = null;
-        }
-    }
-
-    public abstract class ScriptableSingleton<TSelf> : ScriptableObject
-        where TSelf : ScriptableSingleton<TSelf>
-    {
-        private static TSelf instance;
-        public static TSelf Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    var all = Resources.FindObjectsOfTypeAll<TSelf>();
-                    if (all != null && all.Length > 0)
-                    {
-                        instance = all[0];
-                    }
-                    else
-                    {
-                        instance = CreateInstance<TSelf>();
-                    }
-                }
-
-                return instance;
-            }
-        }
-
-        private void Awake()
-        {
-            if (Application.isPlaying)
-            {
-                if (instance == null)
-                    instance = (TSelf)this;
-                else if (instance != this)
-                    Destroy(this);
-            }
-        }
-
-        private void OnDestroy()
-        {
+		protected virtual void OnDestroy()
+		{
             if (instance == this)
-                instance = null;
-        }
-    }
+    			instance = null;
+		}
+	}
+
+	public sealed class NoneInstanceProvider<TSingleton> : ISingletonProvider<TSingleton>
+		where TSingleton : ISingleton<TSingleton>
+	{
+		public TSingleton Get() => default;
+	}
+
+	public abstract class SceneSingleton<TSelf> : SceneSingleton<TSelf, NoneInstanceProvider<TSelf>>
+        where TSelf : SceneSingleton<TSelf>
+    { }
+
+	public sealed class CreatingComponentInstanceProvider<TSingleton> : ISingletonProvider<TSingleton>
+		where TSingleton : SceneSingleton<TSingleton, CreatingComponentInstanceProvider<TSingleton>>
+	{
+		public TSingleton Get() => new GameObject(typeof(TSingleton).Name).AddComponent<TSingleton>();
+	}
+
+	public abstract class SelfCreatingSingleton<TSelf> : SceneSingleton<TSelf, CreatingComponentInstanceProvider<TSelf>>
+        where TSelf : SelfCreatingSingleton<TSelf>
+    { }
 }

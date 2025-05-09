@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Linq.Expressions;
 using System.Linq;
 
@@ -99,6 +98,7 @@ namespace Bipolar.Prototyping.ComponentEvents
             foreach (var eventDatum in eventsData)
             {
                 EventInfo eventInfo = eventDatum.EventInfo;
+                Debug.Log(eventDatum.UnityEvent.GetPersistentEventCount() + " persistent actions");
                 eventInfo.AddEventHandler(component, eventDatum.InvokeDelegate);
             }
         }

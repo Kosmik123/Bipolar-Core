@@ -12,10 +12,10 @@ namespace Bipolar.Prototyping.ComponentEvents
     {
         private static readonly Dictionary<Type, Type> eventDataTypesByArgumentType = new Dictionary<Type, Type>
         {
-            [typeof(int)] = typeof(EventDataInt),
-            [typeof(bool)] = typeof(EventDataBool),
-            [typeof(float)] = typeof(EventDataFloat),
-            [typeof(string)] = typeof(EventDataString),
+            //[typeof(int)] = typeof(EventDataInt),
+            //[typeof(bool)] = typeof(EventDataBool),
+            //[typeof(float)] = typeof(EventDataFloat),
+            //[typeof(string)] = typeof(EventDataString),
         };
 
         public static Type GetEventDataType(Type argumentType)
@@ -30,7 +30,7 @@ namespace Bipolar.Prototyping.ComponentEvents
         internal Component component;
 
         [SerializeReference]
-        internal EventDataBase[] eventsData;
+        internal BaseEventData[] eventsData;
 
         private void Awake()
         {

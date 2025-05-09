@@ -1,11 +1,12 @@
 ﻿using System.Reflection;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace Bipolar.Prototyping.ComponentEvents
 {
     [System.Serializable]
-    internal abstract class EventDataBase
+    internal abstract class BaseEventData
     {
         public string eventName;
         public abstract UnityEventBase UnityEvent { get; }
@@ -22,7 +23,7 @@ namespace Bipolar.Prototyping.ComponentEvents
     }
 
     [System.Serializable]
-    internal class EventData : EventDataBase
+    internal partial class EventData : BaseEventData
     {
         [SerializeField]
         internal UnityEvent unityEvent;
@@ -30,7 +31,7 @@ namespace Bipolar.Prototyping.ComponentEvents
     }
 
     [System.Serializable]
-    internal class EventDataInt : EventDataBase
+    internal partial class EventDataInt : BaseEventData
     {
         [SerializeField]
         internal UnityEvent<int> unityEvent;
@@ -38,7 +39,7 @@ namespace Bipolar.Prototyping.ComponentEvents
     }
 
     [System.Serializable]
-    internal class EventDataFloat : EventDataBase
+    internal partial class EventDataFloat : BaseEventData
     {
         [SerializeField]
         internal UnityEvent<float> unityEvent;
@@ -46,7 +47,7 @@ namespace Bipolar.Prototyping.ComponentEvents
     }
 
     [System.Serializable]
-    internal class EventDataString : EventDataBase
+    internal partial class EventDataString : BaseEventData
     {
         [SerializeField]
         internal UnityEvent<string> unityEvent;
@@ -54,10 +55,25 @@ namespace Bipolar.Prototyping.ComponentEvents
     }
 
     [System.Serializable]
-    internal class EventDataBool : EventDataBase
+    internal partial class EventDataBool : BaseEventData
     {
         [SerializeField]
         internal UnityEvent<bool> unityEvent;
         public override UnityEventBase UnityEvent => unityEvent;
     }
+
+#if UNITY_EDITOR
+    internal class ComponentEventsBuildPreprocessor : UnityEditor.Build.IPreprocessBuildWithReport
+    {
+        public int callbackOrder => 0;
+
+        public void OnPreprocessBuild(UnityEditor.Build.Reporting.BuildReport report)
+        {
+            Debug.Log("Preprocess build");
+            //PlayerSettings.SetAdditionalIl2CppArgs("--compilation-defines=HEJKA_MISKU");
+        }
+    }
+#endif
 }
+
+

@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Bipolar.Prototyping.ComponentEvents
 {
     [CustomEditor(typeof(ComponentEvents))]
-    public class ComponentEventsEditor : Editor
+    public class ComponentEventsEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {
@@ -120,12 +120,12 @@ namespace Bipolar.Prototyping.ComponentEvents
             return property?.FindPropertyRelative(nameof(EventData.eventName))?.stringValue;
         }
 
-        private static EventDataBase CreateEventData(EventInfo componentEvent, Type componentType)
+        private static BaseEventData CreateEventData(EventInfo componentEvent, Type componentType)
         {
             var eventHandlerType = componentEvent.EventHandlerType;
             Type eventDataType = GetEventDataType(eventHandlerType, componentType);
 
-            var unityEventInstance = (EventDataBase)Activator.CreateInstance(eventDataType);
+            var unityEventInstance = (BaseEventData)Activator.CreateInstance(eventDataType);
             return unityEventInstance;
         }
 

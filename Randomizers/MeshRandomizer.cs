@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Bipolar
 {
     [RequireComponent(typeof(MeshFilter))]
-    public class MeshRandomizer : Randomizer<MeshFilter>
+    public class MeshRandomizer : GenericRandomizer<MeshFilter>
     {
         [SerializeField]
         private Mesh[] meshes;

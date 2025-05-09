@@ -22,7 +22,8 @@ namespace Bipolar.Editor
             var iProperty = property.FindPropertyRelative("i");
             var jProperty = property.FindPropertyRelative("j");
             var kProperty = property.FindPropertyRelative("k");
-            var backingGuid = new Guid(aProperty.intValue,
+            var backingGuid = new Guid(
+                aProperty.intValue,
                 (short)bProperty.intValue,
                 (short)cProperty.intValue,
                 (byte)dProperty.intValue, 

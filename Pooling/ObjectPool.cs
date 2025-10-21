@@ -3,24 +3,49 @@ using UnityEngine;
 
 namespace Bipolar.Pooling
 {
-	public interface IObjectPool
+    public interface IPool
+    {
+        int Count { get; }
+    }
+
+    public interface IPool<T> : IPool
+    {
+        T Get();
+        void Release(T @object);
+    }
+
+	public abstract class Pool<T> : MonoBehaviour, IPool<T>
 	{
-		int Count { get; }
-		Object Get();
-		void Release(Object @object);
+		public delegate T CreateFunc(T prototype);
+
+		private readonly Stack<T> pool = new Stack<T>();
+		public int Count => pool.Count;
+
+		public System.Action<T> OnSpawnAction { get; set; }
+		public CreateFunc CreateFunction { get; set; }
+
+		public T Get() => TryGetFromPool(out var @object)
+			? @object
+			: SpawnNew();
+
+		protected abstract T SpawnNew();
+
+		private bool TryGetFromPool(out T @object)
+		{
+			@object = default;
+			while (@object == null && pool.Count > 0)
+				@object = pool.Pop();
+
+			return @object != null;
+		}
+
+		public void Release(T pooledObject)
+		{
+			pool.Push(pooledObject);
+		}
 	}
 
-	public interface IObjectPool<T> : IObjectPool
-		where T : Object
-	{
-		new T Get();
-		void Release(T @object);
-	}
-
-	public class ObjectPool : ObjectPool<Object>
-	{ }
-
-	public abstract class ObjectPool<T> : MonoBehaviour, IObjectPool<T>
+	public abstract class ObjectPool<T> : Pool<T>
 		where T : Object
 	{
 		[SerializeField]
@@ -31,27 +56,14 @@ namespace Bipolar.Pooling
 			set => prototype = value;
 		}
 
-		private readonly Stack<T> pool = new Stack<T>();
-
-		public int Count => pool.Count;
-
-		public T Get() => TryGetFromPool(out var @object) ? @object : Instantiate(prototype);
-
-		private bool TryGetFromPool(out T @object)
+		protected override T SpawnNew()
 		{
-			@object = null;
-			while (@object == null && pool.Count > 0)
-				@object = pool.Pop(); 
-
-			return @object != null;
+			T instance = CreateFunction != null ? CreateFunction(prototype) : Instantiate(prototype);
+			OnSpawnAction?.Invoke(instance);
+			return instance;
 		}
+	}
 
-		public void Release(T pooledObject)
-		{
-			pool.Push(pooledObject);
-		}
-
-		public void Release(Object @object) => Release(@object);
-        Object IObjectPool.Get() => Get();
-    }
+	public class ObjectPool : ObjectPool<Object>
+	{ }
 }

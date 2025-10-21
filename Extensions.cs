@@ -11,10 +11,10 @@ namespace Bipolar
 		{
 			int randomIndex = Random.Range(0, collection.Count);
 			var elem = collection.GetEnumerator();
-			for (int i = 0; i < randomIndex; i++)
+			for (int i = 0; i <= randomIndex; i++)
 				elem.MoveNext();
 
-			return elem.Current;
+            return elem.Current;
 		}
 
 		public static bool AddDistinct<T>(this IList<T> list, T element)
@@ -25,11 +25,32 @@ namespace Bipolar
 			list.Add(element);
 			return true;
 		}
+
+		public static int IndexOf<T>(this IReadOnlyList<T> readOnlyList, T element)
+		{
+			if (element is null)
+			{
+				for (int i = 0; i < readOnlyList.Count; i++)
+					if (readOnlyList[i] is null)
+						return i;
+
+				return -1;
+			}
+			
+			var equalityComparer = EqualityComparer<T>.Default;
+			for (int i = 0; i < readOnlyList.Count; i++)
+				if (equalityComparer.Equals(readOnlyList[i], element))
+					return i;
+
+			return -1;
+		}
+
+		public static bool Contains<T>(this IReadOnlyList<T> readOnlyList, T element) => readOnlyList.IndexOf(element) >= 0;
 	}
 
 	public static class ComponentExtensions
 	{
-		public static T GetRequired<T>(this MonoBehaviour owner, ref T component) where T : Component
+		public static T GetRequired<T>(this Component owner, ref T component) where T : Component
 		{
 			if (component == null)
 				component = owner.GetComponent<T>();

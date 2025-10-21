@@ -2,6 +2,7 @@
 
 namespace Bipolar
 {
+
     public abstract class GenericRandomizer<T> : MonoBehaviour where T : Component
     {
         private T _randomizedComponent;

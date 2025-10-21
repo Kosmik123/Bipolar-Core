@@ -98,6 +98,7 @@ namespace Bipolar.Prototyping.ComponentEvents
             foreach (var eventDatum in eventsData)
             {
                 EventInfo eventInfo = eventDatum.EventInfo;
+                Debug.Log(eventDatum.UnityEvent.GetPersistentEventCount() + " persistent actions");
                 eventInfo.AddEventHandler(component, eventDatum.InvokeDelegate);
             }
         }

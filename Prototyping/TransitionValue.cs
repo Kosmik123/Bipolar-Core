@@ -4,7 +4,7 @@ using UnityEngine.Events;
 
 namespace Bipolar.Prototyping
 {
-    public class TransitionValue : MonoBehaviour
+    public abstract class Transitioner : MonoBehaviour
     {
         [SerializeField]
         private float transitionDuration = 1;
@@ -16,11 +16,11 @@ namespace Bipolar.Prototyping
         private float valueMultiplier = 1;
 
         [SerializeField]
-        private bool transitionOnStart;
+        protected bool transitionOnStart;
         [SerializeField]
-        private UnityEvent onTransitionEnd;
+        protected UnityEvent onTransitionEnd;
 
-        private void Start()
+        protected void Start()
         {
             if (transitionOnStart)
                 StartTransition();
@@ -37,12 +37,42 @@ namespace Bipolar.Prototyping
             for (float timer = 0; timer < transitionDuration; timer += Time.deltaTime)
             {
                 float progress = timer / transitionDuration;
-                float value = valueMultiplier * transitionCurve.Evaluate(progress);
-                transitionedValue.Invoke(value);
+                ApplyTransition(progress);
                 yield return null;
             }
-            transitionedValue.Invoke(valueMultiplier * transitionCurve.Evaluate(1));
+            ApplyTransition(1);
             onTransitionEnd.Invoke();
+        }
+
+        protected abstract void ApplyTransition(float progress);
+    }
+
+    public class TransitionColor : Transitioner
+    {
+        [SerializeField]
+        private UnityEvent<Color> transitionedValue;
+        [SerializeField]
+        private Gradient transitionGradient;
+
+        protected override void ApplyTransition(float progress)
+        {
+            var value = transitionGradient.Evaluate(progress);
+            transitionedValue.Invoke(value);
+        }
+    }
+
+    public class TransitionValue : Transitioner
+    {
+        [SerializeField]
+        private UnityEvent<float> transitionedValue;
+        [SerializeField]
+        private AnimationCurve transitionCurve;
+        [SerializeField]
+        private float valueMultiplier;
+
+        protected override void ApplyTransition(float progress)
+        {
+            transitionedValue.Invoke(valueMultiplier * transitionCurve.Evaluate(progress));
         }
     }
 }

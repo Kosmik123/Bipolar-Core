@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Bipolar.Prototyping.ComponentEvents
 {
     [CustomEditor(typeof(ComponentEvents))]
-    public class ComponentEventsEditor : Editor
+    public class ComponentEventsEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {
@@ -18,7 +18,7 @@ namespace Bipolar.Prototyping.ComponentEvents
             if (PlayerSettings.GetScriptingBackend(EditorUserBuildSettings.selectedBuildTargetGroup) == ScriptingImplementation.IL2CPP)
             {
                 EditorGUILayout.HelpBox("Component Events is not supported in IL2CPP scripting backend", MessageType.Error);
-                return;
+                //return;
             }
 
             var componentProperty = serializedObject.FindProperty(nameof(ComponentEvents.component));
